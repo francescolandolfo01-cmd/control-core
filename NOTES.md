@@ -1,6 +1,6 @@
 # NOTES
 
-Diario del percorso di 8 settimane: cosa ho imparato, cosa blocca, regole da ricordare.
+Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparato, cosa blocca, regole da ricordare.
 
 ## 2026-10-21 (mer) · S0
 
