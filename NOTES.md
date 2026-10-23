@@ -57,3 +57,36 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 - Codice e repo sotto `~` (filesystem Linux), non in `/mnt/c`: lì è lento, `chmod` non si comporta come su Linux e gli editor Windows possono salvare con fine riga CRLF (`file script.sh` per controllare).
 - `No such file or directory` su uno script → percorso sbagliato: controllare con `ls -l` e guardare il prompt (`~$` vs `/mnt/c/...$`).
 - Errori su stderr con `>&2`; stati di uscita: 0 ok, 1 nessun risultato, 2 uso sbagliato.
+
+## 2026-10-23 (ven) · S0
+
+**Fatto**
+- Missing Semester L5 (Command-line Environment): job control (`Ctrl+Z`, `jobs`, `bg`, `fg`, `kill %1`), segnali e `trap`.
+  - `~/bin/ferma.sh`: a Ctrl+C stampa i giri fatti ed esce con 0 (`trap '…' INT`).
+  - `pidwait` in `~/.bashrc`: aspetta un PID con `kill -0 "$1"`; test `sleep 5 & pidwait $!; echo finito`.
+- tmux: sessione `lab`, pannelli, detach/attach; ssh: `~/.ssh/config` per GitHub, `ssh -T git@github.com` (uscita 1 = ok, niente shell). Alias `gs='git status'`.
+- control-core: flusso completo da solo (branch → PR → check build → Rebase and merge → pull → pulizia branch). NOTES aggiornato a S0 + 12 settimane.
+- `~/git-conflitti`: conflitto di merge (marcatori, `git add`, `git commit`), conflitto di rebase (`git add`, `git rebase --continue`), giro a memoria.
+- `git stash`: pop senza conflitto, pop con conflitto (+ `git stash drop`), `stash -u` per i file non tracciati.
+
+**Da rivedere**
+- Durante un rebase "ours" = main e "theirs" = il mio commit (inverso rispetto al merge).
+- Dopo Rebase and merge l'hash su main cambia: `git branch -d` può rifiutarsi anche se il contenuto è già su main.
+- Gli stash si accumulano a pila: `pop` prende solo l'ultimo.
+
+### Regole da ricordare (23/10)
+
+**Shell**
+- Un file scritto da solo sulla riga di comando viene eseguito (`~/.bashrc` → Permission denied). Per modificarlo `nano`, per caricarlo `source`.
+- Modificare `~/.bashrc` non cambia il terminale aperto finché non faccio `source ~/.bashrc`.
+- `kill %1` = job 1, `kill 1` = PID 1 (stessa trappola di `n` vs `$n`). `$!` = PID dell'ultimo processo in background.
+- Mai cancellare la cartella in cui mi trovo: prima `cd ~`, poi `rm -rf`. `Unable to read current working directory` = sono in una cartella cancellata → `cd` con il percorso completo.
+
+**Git**
+- Ogni comando Git inizia con `git` (`pull` da solo non esiste).
+- Dopo il merge su GitHub: prima `git switch main`, poi `git pull`. Mai `pull` sul branch della PR già cancellato.
+- Prima di `git branch -D`: `git diff main <branch>` deve essere vuoto. Poi `git fetch --prune` per i branch remoti vecchi.
+- Conflitto: cancellare tutti e tre i marcatori e tenere da ciascun lato le righe giuste. Controllo: `grep -c '<<<<<<<' file` = 0.
+- Rebase in conflitto: `git add` + `git rebase --continue`, non `git commit`.
+- `git stash` senza `-u` lascia i file non tracciati ma prende le modifiche ai file tracciati: prima guardare `git status`. Dopo `pop`, `git stash list` deve essere vuoto.
+- Conventional commits: tipo minuscolo (`fix:`, non `FIX:`).
