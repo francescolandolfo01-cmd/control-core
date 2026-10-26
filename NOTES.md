@@ -90,3 +90,22 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 - Rebase in conflitto: `git add` + `git rebase --continue`, non `git commit`.
 - `git stash` senza `-u` lascia i file non tracciati ma prende le modifiche ai file tracciati: prima guardare `git status`. Dopo `pop`, `git stash list` deve essere vuoto.
 - Conventional commits: tipo minuscolo (`fix:`, non `FIX:`).
+
+## 2026-10-24 (sab) · S0
+
+**Fatto**
+- learncpp capitoli 1 (C++ Basics), 2 (Functions and Files), 4 (Fundamental Data Types), esercizi in `~/cpp-lab`.
+
+**Da rivedere**
+- nomi, esercizi, per ora poca roba
+
+## 2026-10-26 (lun) · S1
+
+**Fatto**
+- Quiz di ripasso S0 a memoria: 1 giusta su 6 senza aiuto, 3 con un indizio, 2 a metà.
+
+**Da rivedere**
+- `$nome` = valore della variabile, `$(cmd)` = output del comando, `nome` = testo.
+- Rebase in conflitto: `git add` + `git rebase --continue`, mai `git commit`.
+- Dopo il merge su GitHub: `git switch main`, poi `git pull`.
+- `kill %1` = job 1, `kill 1` = PID 1.
