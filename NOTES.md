@@ -109,3 +109,16 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 - Rebase in conflitto: `git add` + `git rebase --continue`, mai `git commit`.
 - Dopo il merge su GitHub: `git switch main`, poi `git pull`.
 - `kill %1` = job 1, `kill 1` = PID 1.
+
+## 2026-10-27 (mar) · S1
+
+**Fatto**
+- learncpp 8.12 + quiz 8.x es. 1–2 (isPrime, con variante).
+- ROS 2 turtlesim: nodi, `ros2 node list/info`, remap `__node:=`, servizio `/spawn` da rqt (stringhe tra apici).
+- PR docs/s1-plan mergiata; conflitto di rebase in `~/git-lab/rebase-27` risolto con `git add` + `git rebase --continue`.
+- `~/cpp-lab/primo_ordine`: ZOH vs Eulero vs analitica; con Ts > 2τ Eulero diverge, ZOH no.
+- learncpp 5.1–5.6: const, constexpr ...
+
+**Da rivedere**
+- learncpp 8.13–8.15 + quiz 8.x es. 3 (Hi-Lo): rimandati a sabato 31/10.
+- ...
