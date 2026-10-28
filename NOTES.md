@@ -117,8 +117,40 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 - ROS 2 turtlesim: nodi, `ros2 node list/info`, remap `__node:=`, servizio `/spawn` da rqt (stringhe tra apici).
 - PR docs/s1-plan mergiata; conflitto di rebase in `~/git-lab/rebase-27` risolto con `git add` + `git rebase --continue`.
 - `~/cpp-lab/primo_ordine`: ZOH vs Eulero vs analitica; con Ts > 2τ Eulero diverge, ZOH no.
-- learncpp 5.1–5.6: const, constexpr ...
+- learncpp 5.1–5.6: variabili `const`, letterali, sistemi numerici, regola as-if, espressioni costanti, `constexpr` (usato in `primo_ordine`).
 
 **Da rivedere**
 - learncpp 8.13–8.15 + quiz 8.x es. 3 (Hi-Lo): rimandati a sabato 31/10.
-- ...
+- isPrime: condizione del `for` scritta al contrario e caso `x < 2` dimenticato.
+- `std::exp(-Ts / tau)`, non `e exp(1 - Ts/tau)`. ZOH: a = e^(−Ts/τ), b = K·(1 − a): K fuori dall'esponenziale.
+- Passare `k * Ts` (il tempo), non `k` (l'indice).
+- Copiare solo i comandi, mai il testo descrittivo sulla stessa riga.
+- `git diff main <branch>`: righe `-` non bloccano la cancellazione, righe `+` sì.
+
+## 2026-10-28 (mer) · S1
+
+**Fatto**
+- Ripasso a memoria: ciclo `for`, correzione `zohA`/`zohB`, `~/bin/quanti.sh`, job control, lettura di `git diff`, comandi dopo il merge.
+- ROS 2 Understanding topics: `ros2 topic list/echo/info/pub/hz`, `ros2 interface show`, rqt_graph (togliere la spunta Hide: Debug per vedere `/_ros2cli_…`). `/turtle1/pose` a 62,5 Hz = timer di 16 ms.
+- learncpp cap. 6 (operatori) + `~/cpp-lab/confronti`: `approxEqual` assoluto + relativo (6.7). `0.1 + 0.2 == 0.3` → false; `a1 == a2` → true con Ts = 0.1, ma per caso.
+- `git revert` con conflitto in `~/git-lab/revert-28b`.
+- CMake: primo `CMakeLists.txt` in `~/cpp-lab/primo-cmake`; `cmake -S . -B build` (configura) e `cmake --build build` (compila).
+- `~/cpp-lab/primo-multi`: `primo.h` / `primo.cpp` / `main.cpp`, `namespace primo`, CMake con due `.cpp`. ZOH errore 0 rispetto all'analitica; Eulero con Ts = 2.5 diverge a segno alterno (a = −1.5).
+
+**Da rivedere**
+- `$PATH` è una variabile di sistema, non il primo argomento (`$1`).
+- `'…'` = tutto letterale; `"…"` = le variabili vengono sostituite. Percorsi sempre tra virgolette: `"$1"`.
+- `git diff main` confronta main con la cartella; `git diff main <branch>` confronta i due branch. Prima di `-D` servono due nomi.
+- Revert in conflitto: `git add` + `git revert --continue`, mai `git commit` (primo tentativo chiuso con `git commit -m "Fixed Ki"`).
+- `git status` dice quale operazione è in corso e se `git add` è già fatto.
+- Tra double mai `==`: confronto con tolleranza.
+- `*.cpp` prende tutti i `.cpp`: con più versioni (più `main`) si compila un file alla volta.
+- Un blocco `cat > file << 'EOF'` si incolla nel terminale, non dentro nano.
+- `std::max(x, y)` vuole due argomenti; per il valore assoluto si usa `std::abs`.
+- Il C++ distingue maiuscole e minuscole: `k` ≠ `K`.
+- Errori del compilatore: leggere solo le righe `error:` (file:riga:colonna), le `note:` dopo.
+- CMake ricompila solo se il file è salvato davvero: controllare l'orario con `ls -l`.
+
+**Rimandato**
+- Quiz learncpp cap. 7 al ripasso del 29/10; finire di leggere 7.1–7.5.
+- learncpp 8.13–8.15 + Hi-Lo: sabato 31/10.
