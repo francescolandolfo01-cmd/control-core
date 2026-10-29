@@ -154,3 +154,49 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 **Rimandato**
 - Quiz learncpp cap. 7 al ripasso del 29/10; finire di leggere 7.1–7.5.
 - learncpp 8.13–8.15 + Hi-Lo: sabato 31/10.
+
+## 2026-10-29 (gio) · S1
+
+**Fatto**
+- Ripasso a memoria: `approxEqual` con `std::abs`, previsione di `x++`, `~/bin/righe.sh`, `find … -print0 | xargs -0 wc -l`, job control (`kill %1`), revert in conflitto in `~/git-lab/ripasso-29`, lettura di `git diff main <branch>`.
+- learncpp 7.1–7.5 + quiz 7.x in `~/cpp-lab/cap7`; `scope.cpp` con `-Wshadow`.
+- ROS 2 Understanding services: `ros2 service list -t`, `ros2 interface show turtlesim/srv/Spawn`, `/spawn` di `tartaruga2`, `topic pub --once` su `/tartaruga2/cmd_vel`, `/clear`.
+- Tag in `~/git-lab/tag-29`: `v0.1.0` annotato su `HEAD~1`, tag leggero `prova`.
+- learncpp 12.1–12.6 (riferimenti) + `~/cpp-lab/riferimenti`: `zohCoeffs` e `passo` con `double&`, `x(5) = 1.99991`, `errMax = 2.2e-16` (= eps, ZOH esatto); `passoCopia` lascia `xc = 0`.
+
+**Da rivedere**
+
+*C++*
+- `std::max(x, y)` = il più grande tra due valori; `std::abs(x)` = distanza da zero (seconda volta).
+- `x++` restituisce il valore vecchio, `++x` quello nuovo; `x` viene incrementata subito.
+- Shadowing: la variabile esterna è nascosta, non persa. `-Wshadow` avvisa del rischio di modificare quella sbagliata.
+- Dichiarazione (`.h`) = firma con `;`. Definizione (`.cpp`) = firma senza `;` seguita da `{ … }`.
+- Una funzione `void` non fa `return valore;`: il risultato esce assegnandolo al parametro `&`.
+- A un `double&` si passa una variabile, mai un numero (`1.0` è un rvalue). `const T&` accetta tutto.
+- Tipi fondamentali per valore; `const T&` per i tipi costosi da copiare; `T&` se la funzione deve modificare l'argomento.
+- Il tempo è indice × Ts: `(k + 1) * Ts`, non `k + 1` (seconda volta).
+- Un file per ruolo: `main.cpp` per il `main`, `primo.cpp` per le definizioni.
+
+*CMake*
+- Il nome in `add_executable(NOME …)` va ripetuto identico in ogni `target_…(NOME …)`.
+- `CMakeLists.txt` con la L maiuscola: Linux distingue maiuscole e minuscole.
+- `Cannot find source file` = il file non c'è o ha un altro nome: `ls -l`.
+
+*Shell*
+- `[ "$1" ]` è vero se l'argomento c'è; per "manca" serve `[ -z "$1" ]`.
+- `exit 2` = stato di uscita; `>&2` = output su stderr; `>2` = scrive in un file chiamato `2`.
+- `wc -l < "$1"` dà solo il numero; `wc -l` senza file legge dalla tastiera.
+- `xargs` è un comando, senza trattino. `.` = cartella corrente come argomento; `pwd` = comando che la stampa.
+
+*Git*
+- `git revert` vuole un hash o `HEAD~N`, mai il messaggio del commit. `git log --oneline -1` mostra solo l'ultimo.
+- `fatal: not a git repository` = cartella sbagliata: guardare il prompt.
+- `git tag -a NOME -m "MESSAGGIO" COMMIT`: prima il nome del tag nuovo, il messaggio solo con `-m`.
+- Un commit prima = `HEAD~1` (tilde, AltGr + ì), non `HEAD-1`.
+
+*ROS 2*
+- Topic = flusso continuo, un verso, senza risposta (come una linea di segnale in Simulink). Servizio = richiesta → risposta, una volta (come chiamare una funzione).
+
+**Rimandato**
+- Pro Git 2.6 (Tagging) + compiti 3–5 sui tag (`git tag -n`, `git diff v0.1.0 HEAD`, cancellare `prova`): ven 30/10.
+- learncpp 8.13–8.15 + Hi-Lo: sabato 31/10.
