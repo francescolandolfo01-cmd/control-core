@@ -200,3 +200,55 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 **Rimandato**
 - Pro Git 2.6 (Tagging) + compiti 3–5 sui tag (`git tag -n`, `git diff v0.1.0 HEAD`, cancellare `prova`): ven 30/10.
 - learncpp 8.13–8.15 + Hi-Lo: sabato 31/10.
+
+## 2026-10-30 (ven) · S1
+
+**Fatto**
+- Ripasso a memoria: previsione `x++`/`++x`, `zohStep` con `double&` (x(1) = 1.72933, errore < 1e-12), `~/bin/controlla.sh` (stderr + `exit 2`), job control, `git revert HEAD~N` in `~/git-lab/ripasso-30`, ours/theirs nel rebase.
+- ROS 2 Understanding parameters: `ros2 param list/get/set/dump`, `background_r` = 150, `~/ros2-lab/turtlesim.yaml`, riavvio con `--ros-args --params-file`.
+- learncpp 16.1–16.6, 16.8 (`std::vector`, `std::size_t`, range-based for) + `~/cpp-lab/vettori`: `media` = −0.166667, `maxAbs` = 4.
+- Pro Git 2.6 Tagging + compiti 3–5 in `~/git-lab/tag-29`: `git tag -n`, `git diff v0.1.0 HEAD`, `git tag -d prova`.
+- `~/cpp-lab/simula-vettori` (`sim.h`/`sim.cpp`/`main.cpp`, namespace `sim`, CMake con `-Wall -Wextra -Wshadow`): `tempi`, `simula`, `analitica`, `errMax`.
+  - Ts = 0.1, N = 50: x(5) = 1.99991, errMax ZOH = 2.2e-16, errMax Eulero = 0.0804.
+  - Eulero con orizzonte 5 s: N = 25/50/100/200 → 0.1787 / 0.0804 / 0.0384 / 0.0188 (si dimezza con Ts: primo ordine).
+
+**Da rivedere**
+
+*C++*
+- Dopo il passo k lo stato è x[k+1], al tempo `(k + 1) * Ts` (terza volta, corretto da solo).
+- Nel `.cpp` niente `;` dopo la firma della definizione (terza volta).
+- Un'operazione da fare una volta (dividere per n) va dopo il ciclo, non dentro.
+- In un "massimo di |…|" si confronta e si salva la stessa quantità: `std::abs(v[j])`, non `v[j]`.
+- `std::vector<double> x(N)` crea N elementi: tra tonde va la lunghezza totale (`u.size() + 1`, non `1`).
+- Il ciclo che riempie un vettore usa `v.size()` di quel vettore (`k < n` lasciava `t[n] = 0` → errMax = valore finale).
+- `v` = vettore intero, `v[k]` = un elemento: `std::cout` vuole un elemento, `errMax`/`simula`/`analitica` il vettore.
+- Range-based for: il tipo è quello dell'elemento (`double&` per modificare), il nome è libero e vive solo nel ciclo.
+- Ciclo a indice se serve la posizione `k`; range-based for se serve solo l'elemento.
+- Dentro un ciclo usare solo le variabili del giro (`NB`, `tB`), non quelle del blocco precedente.
+- Una variabile locale non prende il nome della funzione (`media` dentro `media`).
+
+*Errori del compilatore e a runtime*
+- `expected ';' before X` → manca il `;` nella riga prima di X.
+- `expected unqualified-id before '{'` → `;` di troppo dopo la firma nella riga sopra.
+- `no match for 'operator<<' … std::vector` → sto stampando un vettore intero.
+- Con un muro di `note:` leggere solo la prima riga `error:`.
+- `malloc(): corrupted …` = scrittura fuori da un vettore fatta prima di quel punto; `-g -fsanitize=address` dà la riga.
+
+*Shell*
+- `syntax error near unexpected token 'fi'` → manca `then`, o il `;` prima di `then`, o gli spazi in `[ … ]`.
+- Shebang `#!/bin/bash` sulla riga 1, senza spazi prima.
+- `cd: No such file or directory` → la cartella non esiste: `mkdir -p`.
+
+*Git*
+- Rebase: ours = main (dove Git è seduto), theirs = il mio commit; nel merge è il contrario (seconda volta).
+- Prima di modificare: `git status` → main pulito → `git pull` → `git switch -c NOME`.
+- `git diff A B`: due nomi (branch, tag, hash, `HEAD~N`), mai tre; `git` + spazio + sottocomando.
+- Tag annotato = oggetto con autore, data, messaggio; tag leggero = solo puntatore. `git push origin NOMETAG` o `--tags`.
+- Prima di `git tag -d` rileggere il nome (cancellato `v0.1.0` per sbaglio, ricreato su `HEAD~1`).
+
+*ROS 2*
+- Parametro = configurazione del nodo (il K del blocco Gain); topic = segnale che scorre; servizio = richiesta → risposta.
+- `ros2 param dump` stampa YAML (redirect `>` per salvarlo); `param load` = nodo già avviato; all'avvio `--ros-args --params-file FILE`.
+
+**Rimandato**
+- learncpp 8.13–8.15 + Hi-Lo: sabato 31/10.
