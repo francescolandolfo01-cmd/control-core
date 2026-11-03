@@ -1,4 +1,4 @@
-# NOTES
+ù# NOTES
 
 Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparato, cosa blocca, regole da ricordare.
 
@@ -252,3 +252,57 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 
 **Rimandato**
 - learncpp 8.13–8.15 + Hi-Lo: sabato 31/10.
+
+## 2026-10-31 (sab) · S1
+
+**Fatto**
+- Ripasso: `~/bin/esiste.sh FILE` (stderr + `exit 2` se manca l'argomento, `0` se il file esiste, `1` se no); messaggio conventional per il commit del 30/10: `docs(notes): add 30 Oct log`.
+- learncpp 8.13–8.15 (`Random.h`) + `~/cpp-lab/random/dado.cpp`: 6000 tiri, conteggi ~1000 per faccia.
+- Quiz 8.x es. 3 Hi-Lo in `~/cpp-lab/hilo`: 7 tentativi, `playAgain` con `do-while`.
+
+**Da rivedere**
+
+*Shell*
+- Prompt `~/bin/esiste.sh$` = sono dentro una cartella con quel nome. Gli script si creano con `nano ~/bin/nome.sh`, non con `mkdir`.
+- `ls -l` su un file = una riga; su una cartella = `total` + contenuto.
+- `rmdir` cancella solo cartelle vuote. `mv A B` con `B` cartella mette `A` dentro `B`, non lo rinomina.
+- `source` solo per `~/.bashrc`: su uno script con `exit` chiude il terminale (ero finito in PowerShell, `wsl` per tornare).
+- `>&2` = stderr; `>2` = crea un file chiamato `2` (seconda volta).
+- `[ … ]` e `test …` sono lo stesso comando: mai insieme.
+- I segnaposti maiuscoli di `man` (`FILE`) si sostituiscono con il valore vero, qui `"$1"` (seconda volta).
+- `nano nome` apre il file nella cartella corrente; se non c'è ne crea uno vuoto. Per modificare uno script in `~/bin`: `nano ~/bin/nome.sh`.
+- `which nome` vuoto = file mancante, non eseguibile, o cartella non nel `PATH`.
+- `bash -x script argomenti` mostra ogni riga con le variabili sostituite: primo strumento quando il risultato è sbagliato.
+
+*C++*
+- `… has not been declared` = dichiarazione non vista: controllare `#include "File.h"` e che il `.h` non sia vuoto (`touch` crea file vuoti, `wc -l` per controllare).
+- `do { … } while (condizione);`: `;` solo alla fine, un solo `while` dopo la `}`.
+- Con più errori correggo solo il primo e ricompilo. `expected X before Y` = l'errore è appena prima di Y.
+- `if`/`else` senza graffe controllano una sola istruzione: `return true;` fuori dalle graffe veniva eseguito sempre. L'indentazione non conta.
+- `std::cin >> ch` con `char` legge un carattere alla volta: `76` = due risposte.
+- Caratteri tra apici singoli: `'y'` è un `char`, `"y"` una stringa.
+
+*Git*
+- Conventional commit = `tipo(scope): descrizione`; per NOTES sempre `docs(notes): …`. L'hash lo genera Git.
+- Senza modifiche `git commit` risponde `nothing to commit`: prima `git status`.
+
+**Rimandato**
+- learncpp 13.1, 13.7–13.10 (struct) + `~/cpp-lab/struct-zoh`: dom 1/11, insieme a NOTES e PR.
+
+## 2026-11-03 (mar) · S2
+
+**Fatto**
+- Ripasso a memoria: `tempo.cpp`, previsione `for` senza graffe (`-Wmisleading-indentation`), `righe2.sh`, `mv`, `source` vs `bash`, tag annotato `v0.2.0` su `HEAD~1`, ours/theirs nel rebase.
+- ROS 2 Understanding actions: `ros2 action list -t/info/send_goal --feedback`, `interface show turtlesim/action/RotateAbsolute`.
+- learncpp 13.1, 13.7–13.10 + `~/cpp-lab/struct-zoh`: a = 0.818730753, b = 0.362538494, x(5) = 1.9999092.
+- Eigen 3.4.0 installato (`libeigen3-dev`).
+
+**Da rivedere**
+- Senza graffe `for`/`if`/`else` comandano una sola istruzione: graffe sempre (seconda volta).
+- `source` esegue nel terminale corrente (un `exit` lo chiude); `bash script.sh` in un processo figlio.
+- `mv ORIGINE DESTINAZIONE`: due argomenti, niente parole in più.
+- Azione: goal e result = servizi, feedback = topic. Cancel = lo chiede il client; abort = lo decide il server.
+- I tasti del teleop vanno premuti nel pannello del teleop; `f` cancella la rotazione.
+- Struct: i valori tra `{ }` riempiono i membri nell'ordine di dichiarazione; i restanti prendono il default.
+- Passare una struct per `const Nome&`; `Nome&` solo per modificarla. Con `Nome p;` senza `{}` i membri senza default non sono inizializzati.
+- L'output deve seguire il formato atteso (ordine dei membri, spazi).
