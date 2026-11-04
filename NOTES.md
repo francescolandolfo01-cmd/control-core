@@ -1,4 +1,4 @@
-ù# NOTES
+# NOTES
 
 Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparato, cosa blocca, regole da ricordare.
 
@@ -306,3 +306,39 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 - Struct: i valori tra `{ }` riempiono i membri nell'ordine di dichiarazione; i restanti prendono il default.
 - Passare una struct per `const Nome&`; `Nome&` solo per modificarla. Con `Nome p;` senza `{}` i membri senza default non sono inizializzati.
 - L'output deve seguire il formato atteso (ordine dei membri, spazi).
+
+## 2026-11-04 (mer) · S2
+
+**Fatto**
+- Ripasso a memoria: struct + `for` senza graffe, `maxAbsErr` (2.5), `~/bin/conta-righe.sh` (exit 2/1/0), quoting `'…'` vs `"…"`, sequenza dopo il merge, revert in conflitto.
+- ROS 2 logging: livelli FATAL → DEBUG, `/rosout` (topic), rqt_console, `--ros-args --log-level WARN`.
+- learncpp 14.1–14.5 + `~/cpp-lab/classe-zoh`: classe `FirstOrder` con `step`, `state() const`, membri `private`. a = 0.818730753, b = 0.362538494, x(5) = 1.9999092, errore 0.
+- Pro Git 7.7 Reset Demystified + `~/git-lab/reset-03`: `--soft`, `--mixed`, `--hard`, squashing, `git reset FILE`.
+- learncpp 14.9–14.11: costruttore con member initializer list in classe-zoh; prova `-Wreorder` (b = −4e+214 con l'ordine sbagliato).
+
+**Da rivedere**
+
+*Git*
+- soft = HEAD; mixed = HEAD + index; hard = HEAD + index + cartella. `git reset HASH` senza opzione = `--mixed`.
+- Dopo `--mixed` serve di nuovo `git add` prima del commit.
+- `--hard` distrugge le modifiche non committate: prima `git status`.
+- Prima di `branch -d`/`-D`: `git diff main <branch>`. Il branch remoto si cancella su GitHub; `fetch --prune` pulisce solo i riferimenti locali.
+- In un'operazione in corso: `git add FILE` + `git <operazione> --continue`, mai `git commit`.
+
+*Shell*
+- `"feat: riga $4"` → `$4` è il 4° argomento (vuoto): il testo si scrive senza `$` (terza volta).
+- Il percorso di un file è relativo alla cartella del prompt.
+- Tilde: se AltGr + ì non funziona, `HEAD^`, hash o `$HOME`.
+
+*C++*
+- Le funzioni membro si chiamano sull'oggetto (`sys.step()`), non sulla classe.
+- La classe tiene lo stato, chi la usa tiene la storia (vettore nel `main`).
+- Dichiarato un costruttore, il costruttore di default sparisce.
+- I membri si inizializzano nell'ordine di dichiarazione, non della lista: `-Wreorder` e `-Wuninitialized` non si ignorano.
+- L'etichetta di una stampa dice cosa si stampa (errore ≠ analitica).
+
+*ROS 2*
+- `/rosout` è un topic: senza risposta = topic (seconda volta). "Feedback" solo per le azioni.
+
+**Rimandato**
+- struct-zoh: formato di stampa e riga `q{2.0}`.
