@@ -19,4 +19,8 @@ if(BUILD_TESTING)
   target_compile_options(test_smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)  # warning = errore
   include(GoogleTest)
   gtest_discover_tests(test_smoke)             # registra ogni TEST() con ctest
+  add_executable(test_first_order_zoh tests/test_first_order_zoh.cpp)            # un eseguibile di test
+  target_link_libraries(test_first_order_zoh PRIVATE control_core GTest::gtest_main)
+  target_compile_options(test_first_order_zoh PRIVATE -Wall -Wextra -Wpedantic -Werror)  # warning = errore
+  gtest_discover_tests(test_first_order_zoh)             # registra ogni TEST() con ctest
 endif()
