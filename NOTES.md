@@ -366,3 +366,30 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 
 **Rimandato**
 - ROS 2 launch e NOTES 5/11: ven 6/11.
+
+## 2026-11-06 (ven) · S2
+
+**Fatto**
+- Ripasso: `k++`/`++k`, `gain.cpp` (oggetto vs classe, scope del `for`), `mv`, `primo-arg.sh`, `git reset HEAD^` = `--mixed` (corretto senza aiuto).
+- ROS 2 Launch (Concepts + tutorial): `ros2 launch turtlesim multisim.launch.py`, due turtlesim in namespace diversi.
+- learncpp 11.6, 11.7, 11.9 + `~/cpp-lab/template-zoh`: `quadrato<T>`, `simulaN<N>`, x(1) = 1.72933, x(5) = 1.99991.
+- Pro Git 2.3 Viewing the Commit History: `-p`, `--stat`, `--since`, `-S`, `-- percorso`.
+- PR NOTES 5/11 mergiata (`d0129bb`).
+- Eigen: The Matrix class + Matrix and vector arithmetic. Van Loan su carta per il doppio integratore (M³ = 0).
+- `~/cpp-lab/eigen-doppio` (CMake + `find_package(Eigen3)`): x(5) = [12.5; 5], errori 7e-15 e 2e-15.
+
+**Da rivedere**
+
+*C++ / Eigen*
+- Dopo k passi il tempo è `k * Ts` (e `N * Ts`), non `k`/`N` (terza volta).
+- `x(i)` in Eigen = elemento i-esimo, non "x al tempo i": la soluzione analitica è una formula a parte.
+- Tra `< >` vanno i valori noti in compilazione (`simulaN<50>`), tra `( )` gli argomenti a runtime.
+
+*Git*
+- `git switch -d` = detach, non delete. Per cancellare: `git branch -d`/`-D`. `HEAD detached` → `git switch main`.
+- Dopo Rebase and merge l'hash cambia: `git diff main <branch>` vuoto → `git branch -D`.
+- `--` da solo = separatore tra opzioni e percorsi; `--stat` = opzione lunga.
+
+*ROS 2*
+- Nome del topic = namespace + nome (`/turtlesim1/turtle1/cmd_vel`). `pub`/`echo`/`list` sono verbi di `ros2 topic`.
+- Launch file: Python, XML, YAML.
