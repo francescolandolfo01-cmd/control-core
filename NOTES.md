@@ -342,3 +342,27 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 
 **Rimandato**
 - struct-zoh: formato di stampa e riga `q{2.0}`.
+
+## 2026-11-05 (gio) · S2
+
+**Fatto**
+- Ripasso: C++ 1–2, `mv`, `source` vs `bash`, `git reset HEAD^`.
+- GoogleTest Primer: Basic Concepts, Assertions, Simple Tests, `EXPECT_NEAR`.
+- `FirstOrderZoh` in control-core (`include/control_core/first_order_zoh.h`) + 2 test gtest, 3/3 ctest, PR mergiata (`6db9ab0`).
+
+**Da rivedere**
+
+*C++*
+- `TEST(Suite, Nome)`: prima la suite, poi il nome del test.
+- Funzioni membro sull'oggetto (`g.apply`), non sulla classe (seconda volta).
+- Una variabile dichiarata nel `for` non esiste dopo la `}`: la stampa va dentro il ciclo.
+- Il nome dell'argomento passato non deve coincidere con quello del parametro.
+- `x++` restituisce il valore vecchio, `++x` quello nuovo (seconda volta).
+
+*Shell / Git*
+- I file di test vanno in `tests/`: controllare la cartella del prompt prima di `nano`.
+- Il messaggio di commit non è un nome di file.
+- `git log` funziona solo dentro il repo giusto.
+
+**Rimandato**
+- ROS 2 launch e NOTES 5/11: ven 6/11.
