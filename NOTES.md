@@ -393,3 +393,46 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 *ROS 2*
 - Nome del topic = namespace + nome (`/turtlesim1/turtle1/cmd_vel`). `pub`/`echo`/`list` sono verbi di `ros2 topic`.
 - Launch file: Python, XML, YAML.
+
+## 2026-11-07 – 2026-11-09 · S2/S3
+
+- 7/11 riposo (piano non fatto). 8–9/11: learncpp 13.13 (class templates).
+
+## 2026-11-10 (mar) · S3
+
+**Fatto**
+- Ripasso: prevedi10 (k*Ts, x(1) = velocità), zoh10 (-Wreorder, oggetto vs classe, graffe), `firma.sh`, `mv`, `git reset --mixed HEAD~1`, `switch -d` + stash.
+- Eigen: Block operations + `MatrixBase::exp()`; `~/cpp-lab/vanloan`: Ad = [1 0.1; 0 1], Bd = [0.005; 0.1].
+- ROS 2 rosbag2: record/info/play su turtlesim (`tartaruga2`: cmd_vel 82 msg, pose ~64 Hz).
+- Pro Git 5.3 cherry-pick + `~/git-lab/cherry-10`.
+- `StateSpace<Nx,Nu>` con ZOH Van Loan in control-core, Eigen in CMake e CI, 2 test doppio integratore (5/5), PR mergiata.
+
+**Da rivedere**
+
+*Git*
+- `HEAD~1` (tilde) o `HEAD^`, mai `HEAD-1` (seconda volta).
+- `git reset X` = torna su X (destinazione); `git revert X` = annulla X.
+- `git switch -d` = detach, non delete (seconda volta).
+- Con modifiche non committate Git può rifiutare lo switch: prima `git status`, poi commit o stash.
+- Cherry-pick crea un commit nuovo (hash diverso: padre diverso). Conflitto: `git add` + `git cherry-pick --continue`.
+
+*Shell*
+- `source` con `exit` chiude il terminale; gli script con `bash` o con il loro nome (terza volta).
+
+*C++ / Eigen / CMake*
+- `.block(i, j, p, q)`: inizio + dimensione, indici da 0.
+- Van Loan: il blocco I nasce da u̇ = 0 (ZOH), non da y = u.
+- `.exp()` e le operazioni Eigen sono espressioni pigre: risultato in `Eigen::Matrix<…>`, mai `auto`.
+- `(A * B).exp()` ≠ `A * B.exp()`: parentesi.
+- `template <int Nx, int Nu>`: tra `< >` vanno numeri, non tipi.
+- `add_executable(NOME tests/file.cpp)`: il sorgente con l'estensione.
+- Un argomento vuole un valore, non un tipo: `Eigen::Matrix<double, 2, 1>::Zero()`.
+- Copiando una riga controllare che sia arrivata intera fino al `;`.
+
+*ROS 2*
+- Teleop = un messaggio per tasto, solo con la sua finestra attiva.
+- `record` si ferma con Ctrl+C; `play` finisce da solo e pubblica lui i messaggi.
+
+**Rimandato**
+- Test contro scipy (`tools/ref_state_space.py`): dom 15/11 se possibile, altrimenti lun 16/11.
+- RK4 e cart-pole: S4.
