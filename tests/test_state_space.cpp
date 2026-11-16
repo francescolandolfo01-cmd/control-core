@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <Eigen/Dense>
+#include <cmath>
 #include "control_core/state_space.h"
 
 TEST(StateSpace, DoubleIntegratorZoh)
@@ -43,4 +44,45 @@ TEST(StateSpace, DoubleIntegratorStep)
     const double t{ 50 * Ts };
     EXPECT_NEAR(sys.state()(0), t*t/2, 1e-10);
     EXPECT_NEAR(sys.state()(1), t, 1e-10);
+}
+TEST(StateSpace, MatchesScipyZoh)
+{
+    Eigen::Matrix<double, 2, 2> A;
+    A << 0.0, 1.0,
+         -2.0, -3.0;
+    Eigen::Matrix<double, 2, 1> B;
+    B << 0.0, 1.0;
+    const double Ts{ 0.1 };
+    control_core::StateSpace<2, 1> sys{ A, B, Ts, Eigen::Matrix<double, 2, 1>::Zero() };
+    EXPECT_NEAR(sys.Ad()(0, 0), 0.9909440829939373, 1e-10);
+    EXPECT_NEAR(sys.Ad()(0, 1), 0.08610666495797772, 1e-10);
+    EXPECT_NEAR(sys.Ad()(1, 0), -0.1722133299159554, 1e-10);
+    EXPECT_NEAR(sys.Ad()(1, 1), 0.7326240881200041, 1e-10);
+    // Bd = [Ts^2/2; Ts]
+    EXPECT_NEAR(sys.Bd()(0, 0), 0.00452795850303136, 1e-10);
+    EXPECT_NEAR(sys.Bd()(1, 0), 0.08610666495797772, 1e-10);
+}
+
+TEST(StateSpace, StepResponseMatchesAnalytic)
+{
+    // stessi A, B, Ts e sys del test sopra
+    Eigen::Matrix<double, 2, 2> A;
+    A << 0.0, 1.0,
+         -2.0, -3.0;
+    Eigen::Matrix<double, 2, 1> B;
+    B << 0.0, 1.0;
+    const double Ts{ 0.1 };
+    control_core::StateSpace<2, 1> sys{ A, B, Ts, Eigen::Matrix<double, 2, 1>::Zero()};
+
+    Eigen::Matrix<double, 1, 1> u;
+    u << 1.0;
+    for (int k = 0; k < 50; ++k)
+    {
+        sys.step(u);
+    }
+    // t = 50 * Ts = 5: posizione t^2/2, velocità t
+    const double t{ 50 * Ts };
+
+    EXPECT_NEAR(sys.state()(0), 0.5 - std::exp(-t) + 0.5*std::exp(-2*t), 1e-10);
+    EXPECT_NEAR(sys.state()(1), std::exp(-t) - std::exp(-2*t), 1e-10);
 }
