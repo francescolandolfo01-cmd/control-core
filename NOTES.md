@@ -436,3 +436,41 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 **Rimandato**
 - Test contro scipy (`tools/ref_state_space.py`): dom 15/11 se possibile, altrimenti lun 16/11.
 - RK4 e cart-pole: S4.
+
+## 2026-11-16 (lun) · S4
+
+**Fatto**
+- Ripasso a memoria: `blocco.cpp` (`.block`), `errori.cpp` (3 errori), `~/bin/esci.sh` (source vs bash), `~/bin/conta-ext.sh` (find | wc -l), commit su main senza branch riparato in `~/git-lab/main-16`, `git switch -d HEAD~1`.
+- Van Loan su carta per A = [0 1; -2 -3], B = [0; 1]: Mᵏ = [Aᵏ Aᵏ⁻¹B; 0 0], e^{At} con Cayley–Hamilton, Bd = ∫₀ᵀ e^{Aτ} dτ B. Ts = 0.1: Ad(0,1) = Bd(1) = 0.0861066649579777, Bd(0) = 0.0045279585030314.
+- `tools/ref_state_space.py` (scipy `cont2discrete`, zoh) + test `MatchesScipyZoh` e `StepResponseMatchesAnalytic` (x(5) = [0.4932847530; 0.0066925471], tol 1e-10). 7/7 ctest.
+
+**Da rivedere**
+
+*C++ / Eigen*
+- Si inizializza con un valore, non con un tipo: `Eigen::Matrix<double, 2, 2>::Zero()`, con `::`, `Zero` senza s e `()` (terza volta).
+- `template <int N>`: tra `< >` un numero (`2`), non un tipo (`double`) (seconda volta).
+- `auto` su un'espressione Eigen = espressione pigra, non matrice; il tipo degli elementi non c'entra. Sempre `Eigen::Matrix<…>` (seconda volta).
+- `extended character … is not valid in an identifier` = carattere non ASCII copiato (`−`, `“ ”`). Cercarlo con `grep -nP '[^\x00-\x7F]' FILE`. Il segno meno si riscrive a mano.
+
+*Test*
+- Copiando un test si cambiano per primi i dati (A, B, Ts) e i commenti.
+- Test fallito: leggere i valori in `evaluates to` (Ad = [1 0.1; 0 1] = doppio integratore).
+- Valori di riferimento = costanti nel test + commento con lo script che li genera.
+
+*Shell*
+- Se la domanda chiede cosa stampa un comando, rispondere con l'output esatto (`ciao`, `3`) (quarta volta).
+- `|` = l'output diventa input del comando dopo; `$(cmd)` = l'output diventa testo nella riga di comando.
+- `wc -l` senza argomenti conta le righe dalla pipe; `wc -l FILE` quelle di FILE (seconda volta).
+- Per contare file non serve `-exec`. `find .` scende anche in `build/`.
+
+*Git*
+- `git reset X` sposta il branch su cui sono: prima vado sul branch da correggere, X = destinazione (seconda volta).
+- Commit su main senza branch: `switch -c NOME` → `switch main` → `reset --hard origin/main` → `switch NOME` → `push`.
+
+*Matematica*
+- ∫₀ᵀ e^{-aτ} dτ = (1 - e^{-aT})/a, positivo per a > 0; il segno del coefficiente resta davanti.
+
+**Consolidati** (1 volta su 2 senza indizi): `.block`, `HEAD~1`, `switch -d`.
+
+**Rimandato**
+- rosbag record/play e piano S4 in NOTES: mar 17/11.
