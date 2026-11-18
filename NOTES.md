@@ -474,3 +474,75 @@ Diario del percorso S0 + 12 settimane (21/10/2026 - 17/01/2027): cosa ho imparat
 
 **Rimandato**
 - rosbag record/play e piano S4 in NOTES: mar 17/11.
+
+## 2026-11-17 (mar) · S4
+
+Giornata ridotta (colloquio di lavoro).
+
+**Fatto**
+- Ripasso: `zeri.cpp` (`::Zero()`, `template <int>`), `blocco17`, `wc -l`, grep non ASCII, commit su main spostati su `feat/x`, rosbag a parole.
+- learncpp 20.6 Introduction to lambdas.
+
+**Da rivedere**
+
+*C++ / Eigen*
+- `::Zero()` con `::`, non `.` (quarta volta).
+- `template <int N>`: si chiama con un numero (`<3>`), non con un tipo (terza volta).
+
+*Shell*
+- `wc -l` conta i `\n`: `printf 'a\nb\nc'` → 2 (terza volta).
+- `grep -nP '[^\x00-\x7F]' FILE` è una ricetta da copiare, non da sapere a memoria.
+
+*Git*
+- `git reset` sul branch da correggere, con destinazione `HEAD~N` o hash, mai un messaggio di commit.
+- `HEAD~2` con la tilde; per spostare anche i file serve `--hard`.
+- `git switch -c` solo per un branch nuovo, senza spazio tra `-` e `c`.
+
+*ROS 2*
+- rosbag `record`/`play` invertiti (seconda volta).
+
+**Rimandato**
+- learncpp 20.7, lambda-17, amend + reflog, RK4: fatti il 18/11.
+
+## 2026-11-18 (mer) · S4
+
+**Fatto**
+- Ripasso: `zeri18.cpp` (3 errori corretti), `blocco18` (`.block` giusto), `wc -l` con e senza `\n` finale, `echo "righe: $(cat FILE | wc -l)"` (alternativa: `wc -l < FILE`), `~/git-lab/main-18` (`switch -c feat/y` → `switch main` → `reset --hard HEAD~2`, al primo colpo).
+- learncpp 20.7 Lambda captures + `~/cpp-lab/lambda-17`: per valore 0.1073741824, per riferimento 0.3486784401.
+- Pro Git 7.6 Changing the Last Commit + 7.1 RefLog Shortnames + `~/git-lab/amend-18` (amend del messaggio, amend con `--no-edit`, recupero con `HEAD@{1}`).
+- `rk4Step<Nx,Nu>` in control-core (`include/control_core/rk4.h`) + 3 test: `ScalarDecayOneStep` (0.9048375, tol 1e-15), `FourthOrderConvergence` (rapporto ≈ 16.7), `MatchesStateSpaceZoh` (tol 1e-9). 10/10 ctest, PR mergiata.
+- Cart-pole su carta: Lagrange, equazioni non lineari, equilibri (θ = 0, π; x qualsiasi), linearizzazione: A(2,3) = -0.981, A(4,3) = 21.582, B = [0; 1; 0; -2], autovalori 0, 0, ±4.646.
+
+**Da rivedere**
+
+*C++ / Eigen*
+- Una funzione passata come parametro si chiama: `h*f(x)`, non `h*f`.
+- Integrazione: lo stato è input e output del passo, `x = passo(x)`; x0 serve solo a inizializzare (due volte oggi).
+- `f{…}` inizializza, `f(…)` chiama: `std::exp(-1.0)`.
+- `x(0)` di una matrice Eigen è un `double`: gli scalari vanno in `double`, non in `Matrix<1,1>`.
+- Una variabile `const` non si assegna con `<<`: si dichiara senza `const`, poi `<<`.
+- In `<<` si separa solo con virgole; il `;` chiude l'istruzione (non è MATLAB).
+- `Matrix<…> v{}` in Eigen NON azzera: valori casuali. Per gli zeri si usa `::Zero()`.
+- `sys.state()(0)`: prima la chiamata, poi l'indice.
+- Le dimensioni delle lambda vanno controllate: `u` è `<1,1>`, `x` è `<2,1>`.
+- Lambda con Eigen: tipo di ritorno esplicito `-> Eigen::Matrix<…>`, altrimenti restituisce un'espressione pigra.
+- `Eigen::Matrix<…> x = 1.0;` non compila: si dichiara, poi `x << 1.0;`.
+
+*Shell*
+- Pipe: il comando che produce l'output va a sinistra di `|`, `wc -l` a destra.
+
+*Git*
+- `git switch -d HEAD~1` stacca HEAD (non il commit); si torna con `git switch main`, non con `reset` (terza volta).
+- `switch` sposta HEAD, `reset` sposta il branch.
+- Dopo `git add` serve l'amend (o il commit): verificare con `git show --stat`.
+- `reset --hard` cancella anche lo staging; il reflog recupera solo i commit.
+- `~` va indietro nella storia; per tornare a un commit perso si usa `HEAD@{n}` o l'hash dal reflog.
+
+*ROS 2*
+- `record` = ascolta e registra, si ferma con Ctrl+C; `play` = pubblica e finisce da solo (terza volta).
+
+**Consolidati**: `.block` (2 su 2 senza indizi), `HEAD~N` nel reset.
+
+**Rimandato**
+- `cart_pole.h` in C++ + test equilibrio e linearizzazione: gio 19/11.
+- S4 in ritardo: smart pointer, move, optional/variant, DARE/LQR, Kalman, LESO, Python/pybind11 da ripianificare.
