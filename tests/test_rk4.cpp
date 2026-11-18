@@ -2,6 +2,7 @@
 #include <Eigen/Dense>
 #include <cmath>
 #include "control_core/rk4.h"
+#include "control_core/state_space.h"
 
 TEST(Rk4, ScalarDecayOneStep)
 {
@@ -63,3 +64,40 @@ TEST(Rk4, FourthOrderConvergence)
 
     EXPECT_NEAR(rapporto, 16.0, 2.0);
 }
+
+TEST(Rk4, MatchesStateSpaceZoh)
+{
+    Eigen::Matrix<double, 2, 2> A{};
+    Eigen::Matrix<double, 2, 1> B{};
+    A << 0.0, 1.0,
+        -2.0, -3.0;
+    B << 0.0,
+         1.0;
+
+    auto a{
+        [A, B](const Eigen::Matrix<double, 2, 1>& x, const Eigen::Matrix<double, 1, 1>& u) -> Eigen::Matrix<double, 2, 1>
+        {
+                return A*x + B*u;
+        }
+       };
+    Eigen::Matrix<double, 2, 1> x0{};
+    x0 << 0.0,
+          0.0;
+    Eigen::Matrix<double, 1, 1> u{};
+    u << 1.0;
+    Eigen::Matrix<double, 2, 1> xr{x0};
+
+    for(int i{0}; i<100; ++i)
+    {
+    	xr = control_core::rk4Step<2, 1>(a, xr, u, 0.01);
+    }
+
+    control_core::StateSpace<2, 1> sys{ A, B, 0.1, x0 };
+    for(int j{0}; j<10; ++j)
+    {
+        sys.step(u);
+    }
+    EXPECT_NEAR(xr(0), sys.state()(0), 1e-9);
+    EXPECT_NEAR(xr(1), sys.state()(1), 1e-9);
+}
+
