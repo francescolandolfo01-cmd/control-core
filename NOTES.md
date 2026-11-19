@@ -546,3 +546,43 @@ Giornata ridotta (colloquio di lavoro).
 **Rimandato**
 - `cart_pole.h` in C++ + test equilibrio e linearizzazione: gio 19/11.
 - S4 in ritardo: smart pointer, move, optional/variant, DARE/LQR, Kalman, LESO, Python/pybind11 da ripianificare.
+
+
+## 2026-11-19 (gio) · S4
+
+**Fatto**
+- Ripasso: `euler19.cpp` (3 errori, terzo con indizio), `scalare19.cpp`, `echo "header: $(find include … | wc -l)"` = 3, `.cpp` in `.` vs `tests` (7 vs 4), `~/git-lab/ripasso-19` (`switch -d` + ritorno su main, recupero con `HEAD@{1}`).
+- learncpp 7.9 (inline), 12.7–12.10 (puntatori), 19.1 (new/delete) + `~/cpp-lab/puntatori-19`: x(5) = 1.99991, `nullptr` gestito, leak di 24 byte visto con ASan senza `delete`.
+- Pro Git 7.10 (File Annotation, Binary Search): `git blame -L 24,24` e `git log -S` su `state_space.h` → `fa5199d`.
+- `cart_pole.h` (dinamica non lineare + linearizzazione in alto) + 4 test: equilibri in alto/in basso (tol 1e-12), A e B contro differenze centrali (ε = 1e-6, tol 1e-6), energia con RK4 (h = 1e-3, 1 s, tol 1e-8). 14/14 ctest, PR mergiata.
+
+**Da rivedere**
+
+*C++ / Eigen*
+- Lambda con Eigen: sempre `-> Eigen::Matrix<…>`, altrimenti restituisce un'espressione pigra come `auto` (terza volta, con indizio).
+- `x0 << 1.0, 2.0;` su una riga è corretto: l'a capo non conta, il comma initializer riempie riga per riga.
+- Un ingresso solo letto si passa per `const Tipo&`: il `const` non è un errore.
+- `xp(j)` è uno scalare, `xp` il vettore; `j` è l'indice, non la perturbazione: `xp(j) = xp(j) + eps`.
+- Su una matrice servono due indici `A(i, j)`; `A(j)` = indice lineare per colonne (solo la colonna 0 per j < 4).
+- Un test che passa può non controllare niente (`Bn` a zero, `A(j)`): farlo fallire apposta una volta.
+- Gli argomenti si abbinano per posizione: `invalid initialization of reference of type X from Y` = ordine sbagliato.
+- `unused variable` su variabili delle formule = la formula non le usa: rileggerla.
+- `X has not been declared` per un namespace = manca `namespace … { }` nell'header (o si chiude troppo presto).
+- Le variabili locali di una funzione non esistono fuori (`c` di `cartPoleDynamics`).
+- Puntatori: `p->metodo()` = `(*p).metodo()`; controllare `nullptr` prima; ogni `new` con il suo `delete`, altrimenti ASan: `detected memory leaks`.
+
+*Shell*
+- `-type f`: trattino sull'opzione, non sull'argomento.
+- `paths must precede expression` → `find PERCORSO -opzione ARGOMENTO`, `'*.h'` subito dopo `-name`.
+- `find .` scende anche in `build/`: dare la cartella precisa (seconda volta).
+- Prima di `nano` guardare la cartella del prompt: file del ripasso creati dentro control-core (seconda volta).
+
+*Git*
+- `git blame` = ultimo commit di ogni riga che c'è oggi; `git log -S 'testo'` = commit che aggiungono o tolgono il testo, anche se oggi non c'è più.
+- `-L 24,24` per una riga; con un solo numero va fino in fondo al file.
+
+**Consolidati** (prima volta giusta senza indizi, se ripetuto escono): `h * f(x)`, stato aggiornato nel ciclo, `HEAD@{1}` dopo un reset.
+
+**Rimandato**
+- learncpp 22.1–22.5 + `~/cpp-lab/unique-19`: ven 20/11.
+- Include guard in `rk4.h`: `fix(core): add include guard to rk4.h`.
