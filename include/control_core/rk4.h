@@ -1,3 +1,6 @@
+#ifndef CONTROL_CORE_RK4_H
+#define CONTROL_CORE_RK4_H
+
 #include <Eigen/Dense>
 
 namespace control_core
@@ -22,3 +25,4 @@ Eigen::Matrix<double, Nx, 1> rk4Step(F f,
 // x⁺ = x + h/6·(k1 + 2k2 + 2k3 + k4)
 	}
 }
+#endif
