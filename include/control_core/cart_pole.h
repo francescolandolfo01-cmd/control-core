@@ -1,3 +1,9 @@
+#ifndef CONTROL_CORE_CART_POLE_H
+#define CONTROL_CORE_CART_POLE_H
+
+#include <Eigen/Dense>
+#include <cmath>
+
 namespace control_core
 {
 struct CartPoleParams { double M{ 1.0 }; double m{ 0.1 }; double l{ 0.5 }; double g{ 9.81 }; };
@@ -43,3 +49,4 @@ inline void cartPoleLinearUpright(const CartPoleParams& p,
 }
 
 }
+#endif
