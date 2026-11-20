@@ -586,3 +586,53 @@ Giornata ridotta (colloquio di lavoro).
 **Rimandato**
 - learncpp 22.1–22.5 + `~/cpp-lab/unique-19`: ven 20/11.
 - Include guard in `rk4.h`: `fix(core): add include guard to rk4.h`.
+
+## 2026-11-20 (ven) · S4
+
+**Fatto**
+- Ripasso a memoria: `lambda20.cpp` (2 errori corretti), previsione `A(1)` / `A(0, 1)` / `A(1, 0)` = `3 2 3`, `echo "test: $(find ./tests -type f -name '*.cpp' | wc -l)"` = 5, `~/bin/conta-cpp.sh` (stderr + `exit 2`, verificato con `2>/dev/null`), blame vs log -S, reset vs revert.
+- learncpp 22.1–22.5 (smart pointer, r-value reference, move, `std::move`, `std::unique_ptr`) + `~/cpp-lab/unique-20`: x(5) = 1.99991, `p1` nullo dopo il move, `p2 = p1` → `use of deleted function`.
+- Pro Git 7.2 Interactive Staging + `~/git-lab/patch-20`: due commit separati con `git add -p`.
+- `fix(core)`: include guard in `rk4.h` e `cart_pole.h`, più `#include <Eigen/Dense>` e `<cmath>` in `cart_pole.h`. PR mergiata.
+- DARE su carta: dimensioni (K 1×4, S 1×1), autovalori di A_d = e^{λTs}: 1, 1, 1.0974, 0.9113.
+- `tools/ref_dare.py` (scipy `solve_discrete_are`): cart-pole, Ts = 0.02, Q = diag(1, 1, 10, 1), R = 0.1 → diag(P) = [90.973, 86.567, 1280.164, 55.355], K = [-2.7194, -4.9479, -41.6098, -9.3753].
+- `dlqr<Nx,Nu>` in `include/control_core/dlqr.h` (iterazione di Riccati, `ldlt().solve`) + 3 test: `MatchesScipyDare` (P tol 1e-8, K tol 1e-10), `SatisfiesDare` (residuo < 1e-8), `ClosedLoopConverges` (‖x‖ < 1e-9 dopo 1000 passi). 17/17 ctest, PR mergiata.
+- Fallimento apposta con R = 1: falliscono `MatchesScipyDare` e `ClosedLoopConverges` (‖x‖ = 7.6e-8, max |λ| = 0.984); `SatisfiesDare` passa.
+
+**Da rivedere**
+
+*C++ / Eigen*
+- `no match for call to (…lambda(TIPI ATTESI)…) (TIPI PASSATI)`: confrontare le due liste una posizione alla volta (`u` `<2,1>` invece di `<1,1>`, seconda volta).
+- Risultato sbagliato: guardare una componente alla volta e stampare i suoi ingressi prima di toccare la formula.
+- `p1` = puntatore, `*p1` = oggetto, `p1->metodo()` = metodo dell'oggetto. Una funzione che vuole `Tipo&` riceve `*p1`.
+- `std::move` è solo un cast: lo spostamento lo fa chi riceve (costruttore o `operator=` con `T&&`). Dopo il move un `unique_ptr` è `nullptr`.
+- I commenti dello scheletro sono matematica: `ᵀ` → `.transpose()`, spazio tra fattori → `*`.
+- P e K sono parametri `&`: si assegnano, non si ridichiarano (shadowing, seconda volta).
+- K = (R + BdᵀPBd)⁻¹ BdᵀPAd con il P finale in entrambi i fattori: ricalcolare S.
+- Continue e discrete in variabili diverse: `A`/`B` locali, `Ad = ss.Ad();` / `Bd = ss.Bd();` nei parametri.
+- In un'espressione come A⁻¹·b non si calcola l'inversa: `S.ldlt().solve(b)` (`ldlt` per matrici simmetriche definite positive).
+- `(Pn - P).cwiseAbs().maxCoeff()` = massimo |·| senza cicli; il risultato è un `double`.
+- Vettore riga `(1, N)`: il primo indice è sempre 0 (`K(0, j)`, non `K(j, j)`).
+
+*Test*
+- Il riferimento viene da uno strumento indipendente (scipy), mai dall'output del codice testato.
+- `ASSERT_…` per le condizioni senza cui il test non ha senso, `EXPECT_…` per i valori.
+- Ogni `TEST` è una funzione separata: quello che scrivo in uno non vale negli altri.
+- Test di coerenza (residuo ≈ 0) = errori nell'algoritmo; test contro un riferimento = anche errori nei dati. Servono tutti e due.
+
+*Git*
+- `blame` = righe che ci sono oggi; `log -S 'testo'` = commit che aggiungono o tolgono il testo (seconda volta).
+- Commit solo locale → `reset`; commit già pushato su `main` → `revert`.
+- `git diff` = cartella vs staging; `git diff --staged` = staging vs HEAD.
+- Dopo `git add -p`, sempre `git diff --staged` prima del commit: se è vuoto o contiene troppo, non committare.
+
+*Shell*
+- `echo "$(cmd)"` = `cmd`: `echo` serve solo per aggiungere testo.
+
+*Matematica*
+- Stabilità discreta: |λ| < 1. Se A ha autovalore λ, A_d = e^{A·Ts} ha e^{λ·Ts}.
+
+**Consolidati**: `A(j)` indice lineare per colonne, `find` con la cartella precisa, `-type f`.
+
+**Rimandato**
+- Ripianificazione di S4: Kalman, LESO, optional/variant, Python/pybind11.
