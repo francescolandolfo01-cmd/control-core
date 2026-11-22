@@ -2,6 +2,7 @@
 #include <control_core/cart_pole.h>
 #include <control_core/state_space.h>
 #include <control_core/dlqr.h>
+#include <control_core/rk4.h>
 
 // Riferimenti da tools/ref_dare.py
 // (cart-pole in alto, Ts = 0.02, Q = diag(1, 1, 10, 1), R = 0.1)
@@ -100,4 +101,91 @@ TEST(Dlqr, ClosedLoopConverges)
     }
     // x0 = [0; 0; 0.1; 0], 1000 passi x = Acl * x
     EXPECT_LT(x.norm(), 1e-9);
+}
+
+TEST(Dlqr, StabilizesNonlinearCartPole)
+{
+    // setupCartPole, poi dlqr<4, 1>(…, 100000, 1e-12, P, K) e ASSERT_TRUE(ok)
+    Eigen::Matrix<double, 4, 4> Ad;
+    Eigen::Matrix<double, 4, 1> Bd;
+    Eigen::Matrix<double, 4, 4> Q;
+    Eigen::Matrix<double, 1, 1> R;
+    setupCartPole(Ad, Bd, Q, R);
+
+    control_core::CartPoleParams p{};
+    Eigen::Matrix<double, 4, 4> P;
+    Eigen::Matrix<double, 1, 4> K;
+
+    bool ok = control_core::dlqr<4, 1>(Ad, Bd, Q, R, 100000, 1e-12, P, K);
+    ASSERT_TRUE(ok);
+
+    auto f {
+    [p]( const Eigen::Matrix<double, 4, 1>& x, const Eigen::Matrix<double, 1, 1>& u) -> Eigen::Matrix<double, 4, 1> {
+    	return control_core::cartPoleDynamics(x, u, p);
+    }
+    };
+    // lambda f(x, u) che chiama cartPoleDynamics(x, u, p)
+    //   cattura p; tipo di ritorno esplicito -> Eigen::Matrix<double, 4, 1>
+    Eigen::Matrix<double, 4, 1> x;
+    x << 0.0, 0.0, 0.1, 0.0;
+    Eigen::Matrix<double, 1, 1>u0 = -K*x;
+    EXPECT_NEAR(u0(0), 4.160979870360326, 1e-9);
+    // u0 = −K x prima del ciclo: EXPECT_NEAR(u0(0), 4.160979870360326, 1e-9)
+    for(int k{0}; k < 1000; ++k)          // 1000 × Ts = 20 s
+    {
+        Eigen::Matrix<double, 1, 1> u = -K*x;
+        for(int j{0}; j < 10; ++j) {
+        	x = control_core::rk4Step<4, 1>(f, x, u, 0.002);
+        }// 10 volte: x = rk4Step<4, 1>(f, x, u, 0.002);
+    }
+    EXPECT_LT(x.norm(), 1e-9);        //  x.norm() = norm(x) di MATLAB
+}
+
+TEST(Dlqr, NonlinearCloseToLinearForSmallAngle)
+{
+    // stesso setup, x e xl partono entrambi da [0; 0; 0.1; 0]
+    Eigen::Matrix<double, 4, 4> Ad;
+    Eigen::Matrix<double, 4, 1> Bd;
+    Eigen::Matrix<double, 4, 4> Q;
+    Eigen::Matrix<double, 1, 1> R;
+    setupCartPole(Ad, Bd, Q, R);
+
+    control_core::CartPoleParams p{};
+    Eigen::Matrix<double, 4, 4> P;
+    Eigen::Matrix<double, 1, 4> K;
+
+    bool ok = control_core::dlqr<4, 1>(Ad, Bd, Q, R, 100000, 1e-12, P, K);
+    ASSERT_TRUE(ok);
+
+    Eigen::Matrix<double, 4, 1> x;
+    x << 0.0, 0.0, 0.1, 0.0;
+
+    Eigen::Matrix<double, 4, 1> xl;
+    xl << 0.0, 0.0, 0.1, 0.0;
+
+    double maxd{ 0.0 };
+
+    auto f {
+    [p]( const Eigen::Matrix<double, 4, 1>& x, const Eigen::Matrix<double, 1, 1>& u) -> Eigen::Matrix<double, 4, 1> {
+        return control_core::cartPoleDynamics(x, u, p);
+    }
+    };
+    for (int k{0}; k < 250; ++k)               // 5 s con Ts = 0.02
+    {
+     	Eigen::Matrix<double, 1, 1> u = -K*x;
+        for(int j{0}; j < 10; ++j) {
+                x = control_core::rk4Step<4, 1>(f, x, u, 0.002);
+        }
+        xl = (Ad - Bd*K)*xl;
+        double d = std::abs(x(2)-xl(2));
+        if (d > maxd)
+        {
+        	maxd = d;
+        }
+
+    }
+    // 250 passi (5 s): stesso passo non lineare di sopra, poi xl = (Ad − Bd K) xl
+    // maxd = massimo su k di |x(2) − xl(2)|   (std::abs, double)
+    EXPECT_LT(maxd, 1e-3);
+    EXPECT_GT(maxd, 1e-5); // ← così sei sicuro che stai davvero confrontando due modelli diversi
 }
