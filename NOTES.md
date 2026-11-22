@@ -636,3 +636,58 @@ Giornata ridotta (colloquio di lavoro).
 
 **Rimandato**
 - Ripianificazione di S4: Kalman, LESO, optional/variant, Python/pybind11.
+
+## 2026-11-21 (sab) · S4
+
+Riposo. Il piano del 21 è stato fatto il 22.
+
+## 2026-11-22 (dom) · S4
+
+Recupero del piano di sabato.
+
+**Fatto**
+- Ripasso a memoria: `ripasso21.cpp` (3 errori, 2 con indizio) → stampa `3`; `unique21.cpp` (previsione `1 5` / `7`); `find ~/control-core/include/control_core -type f -name "*.h" | wc -l` = 5; `wc -l` con e senza `\n` finale (2 e 1); `git diff` vs `git diff --staged` in `~/git-lab/diff-21`; `git log -S '#include <cmath>'` → `93b6084` (con 2 indizi).
+- LQR sul cart-pole non lineare (`tests/test_dlqr.cpp`): `StabilizesNonlinearCartPole` (θ₀ = 0.1, 1000 passi Ts = 0.02, 10 sotto-passi RK4 h = 0.002, u₀ = 4.160979870, ‖x(20 s)‖ < 1e-9) e `NonlinearCloseToLinearForSmallAngle` (5 s, 1e-5 < max|θ − θ_lin| < 1e-3; NumPy: 2.19e-4). 19/19, PR mergiata.
+- Fallimento apposta con θ₀ = 1.2: u₀ = 49.9318 (= 41.6098 · 1.2), `x.norm()` = `nan`, perché il K lineare non regge l'angolo grande.
+- Pro Git 3.5 Remote Branches + `~/git-lab/remote-22` (server bare + due cloni): `push -u`, `fetch`, `branch -r`, `branch -vv` con `ahead 1`, `push origin --delete`, `fetch --prune`.
+- Kalman su carta: caso scalare A = C = Q = R = 1 → a regime P⁻² − P⁻ − 1 = 0, P⁻ = φ, P⁺ = L = 1/φ = 0.6180339887; un passo da x₀ = 0, P₀ = 1, y = 3 → P⁻ = 2, L = 2/3, x⁺ = 2, P⁺ = 2/3.
+- `KalmanFilter<Nx,Nu,Ny>` in `include/control_core/kalman.h` (predict/update, `S.ldlt().solve`) + `tests/test_kalman.cpp`: `OneStepByHand` (tol 1e-15), `ScalarConvergesToGoldenRatio` (100 passi, tol 1e-12). 21/21.
+- Fallimento apposta con `- m_Rn`: x = 6, P = −2, L = 2; nel secondo test P va in un ciclo di periodo 3 e non converge.
+
+**Da rivedere**
+
+*C++ / Eigen*
+- Un parametro `&` si assegna, non si ridichiara: `Tipo K{};` dentro la funzione = shadowing, errore (terza volta).
+- `auto g = [](…) -> … { … };` è corretto: l'`=` non è un errore.
+- Tipi attesi vs passati nella lambda: `u` `<2,1>` invece di `<1,1>` (terza volta).
+- Dopo `std::move(p1)`, `p1 == nullptr` è vero → stampa `1` (seconda volta).
+- `expected unqualified-id before 'for'` → guardare la riga sopra: `,` invece di `;` alla fine della dichiarazione.
+- Parametri della lambda solo letti: `const Tipo&`, altrimenti non si legano ai temporanei come `x + h*k1/2`.
+- Tutto quello che sta nella libreria ha il prefisso `control_core::` (`rk4Step`).
+- Copiando un ciclo si cambiano subito il nome del contatore e i limiti (`k`/1000 → `i`/10).
+- `EXPECT_…(…)` finisce con `;`.
+- Membri con il nome dello stato, non del valore iniziale: `m_x{ x0 }`, `m_P{ P0 }`, non `m_x0`.
+- Copia-incolla nella lista di inizializzazione: cambiare anche il nome del membro (`m_Bd` ripetuto).
+- `ᵀ` → `.transpose()`: `m_Ad*m_P*m_Ad.transpose()`. Con matrici quadrate l'errore compila lo stesso (terza volta).
+- Il C++ distingue maiuscole e minuscole: `S`, non `s`.
+- Riportare tutti i fattori della formula: `(I − L C) P`, il `P` finale mancava.
+- `update(u)` invece di `update(y)`: con tipi uguali (`<1,1>`) lo scambio compila, e lo trova solo un test con valori diversi da zero.
+- Un membro calcolato dentro la classe (`m_L`) si inizializza nella lista con `::Zero()`, perché non è un parametro.
+
+*Shell*
+- (nessun errore)
+
+*Git*
+- `git log -g` = reflog; `git log -S 'testo'` = commit che aggiungono o tolgono il testo (terza volta, con indizi).
+- `-u` = push + imposta l'upstream; il branch remoto può non esistere prima.
+- `git add` vuole un file cambiato, non la cartella del repo.
+- Prima del commit guardare il branch in `git status`: commit fatto su `main` invece che su `feat/x`, riparato con `switch -c` / `switch main` / `reset --hard origin/main` / `switch`.
+- Verso il server `origin NOME` con lo spazio; `origin/NOME` è la foto locale (`log`, `reset`).
+- `origin/main` si sposta con `fetch`, `pull` e `push`, mai con un commit.
+- `branch -vv`: ahead/behind rispetto all'ultimo fetch.
+
+**Consolidati**: `K(0, j)` su vettore riga, `find` con la cartella precisa + `wc -l`, `wc -l` conta i `\n`, `diff` vs `diff --staged`, `push origin --delete`, `fetch --prune`.
+
+**Rimandato**
+- Tag di Git (già studiati il 29–30/10): nel ripasso di lunedì 23/11.
+- Kalman sul cart-pole contro scipy (DARE duale), LESO, optional/variant, Python/pybind11: piano di S5, lunedì 23/11.
