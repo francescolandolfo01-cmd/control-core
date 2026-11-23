@@ -44,7 +44,9 @@ public:
         // x = x + L (y − C x)
 	m_x = m_x + m_L*(y - m_C*m_x);
         // P = (I − L C) P,  con I = Eigen::Matrix<double, Nx, Nx>::Identity()
-	m_P = ( Eigen::Matrix<double, Nx, Nx>::Identity() - m_L*m_C)*m_P;
+	//m_P = ( Eigen::Matrix<double, Nx, Nx>::Identity() - m_L*m_C)*m_P;
+	Eigen::Matrix<double, Nx, Nx> IKC = Eigen::Matrix<double, Nx, Nx>::Identity() -m_L*m_C;
+	m_P = IKC*m_P*IKC.transpose() + m_L*m_Rn*m_L.transpose();
     }
 
     Eigen::Matrix<double, Nx, 1> state() const { return m_x; }
