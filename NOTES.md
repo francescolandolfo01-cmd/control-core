@@ -691,3 +691,65 @@ Recupero del piano di sabato.
 **Rimandato**
 - Tag di Git (già studiati il 29–30/10): nel ripasso di lunedì 23/11.
 - Kalman sul cart-pole contro scipy (DARE duale), LESO, optional/variant, Python/pybind11: piano di S5, lunedì 23/11.
+
+## 2026-11-23 (lun) · S5
+
+**Fatto**
+- Ripasso a memoria: `cov23.cpp` (shadowing, `;` mancante, `A` invece di `Aᵀ`, tutti e 3 senza indizi) → `6 3` / `3 3`; `move23.cpp` (previsione `1 0` / `8` giusta); `echo "TEST: $(grep -r 'TEST(' ~/control-core/tests | wc -l)"` = 21; `~/bin/ntest.sh` (stderr + `exit 2`, `exit 1` se zero file); tag annotato `v0.1.0` in `~/git-lab/tag-23` (prima leggero, rifatto); `git log -S 'ldlt().solve' --oneline -- include/control_core/dlqr.h` → `c34db3a`.
+- DARE duale su carta: a = Adᵀ, b = Cᵀ, q = Qn, r = Rn → X = P⁻; L = P⁻Cᵀ(CP⁻Cᵀ + Rn)⁻¹, P⁺ = (I − LC)P⁻; `dlqr(Adᵀ, Cᵀ, Qn, Rn)` dà Kᵀ = Ad·L (guadagno del predittore).
+- `tools/ref_kalman.py`: C misura x e θ, Qn = 1e-4·I, Rn = 1e-3·I → L(0,0) = 0.2842066473, L(3,1) = 0.8120211506, diag(P⁺) = [2.842e-4, 5.320e-3, 3.104e-4, 1.077e-2].
+- Fallimento apposta in Python con `a = Ad`: `LinAlgError: Failed to find a finite solution` (modo con λ_d = 1 non stabilizzabile da Cᵀ, rank 3 invece di 4).
+- `Kalman.CartPoleMatchesScipyDualDare` (1000 passi, y = u = 0, L tol 1e-10, diag P⁺ tol 1e-12): con (I − LC)P fallisce, L(0,0) = 1 e P fino a 2.6e26.
+- Forma di Joseph in `kalman.h`: P⁺ = (I − LC)P⁻(I − LC)ᵀ + L Rn Lᵀ → 22/22, test scalari compresi.
+
+**Da rivedere**
+
+*C++ / Eigen*
+- `std::cout` stampa un `bool` come `1` (vero) / `0` (falso); `std::boolalpha` per `true`/`false`.
+- Il `return` di `main` è lo stato di uscita: `0` = successo, come `exit 0` e `$?`. Non è un `bool`.
+- Dopo `std::move(p1)` la proprietà passa a `p2`: `p1 == nullptr` è vero (terza volta, spiegazione invertita).
+- `&` va nei parametri, non nelle variabili locali: `declared as reference but not initialized`.
+- Errore Eigen lungo: cercare `required from here` (riga del mio codice) e `Dst`/`Src` (le due dimensioni). `YOU_MIXED_MATRICES_OF_DIFFERENT_SIZES` = dimensioni diverse.
+- Copiando una riga (Qn → Rn) si cambia subito anche la dimensione (`Identity()` 4×4 su Rn 2×2).
+- `P = A*P*A.transpose()` funziona (il prodotto usa un temporaneo); `P = P.transpose()` no → `P.transposeInPlace()`.
+- Dopo una modifica: salvare, `cmake --build build`, poi `ctest`. Output identico alla cifra = codice vecchio.
+
+*Python*
+- D ha le righe di C e le colonne di B (`(2, 1)` con C 2×4).
+- Ogni variabile va definita: identità = `np.eye(n)`.
+- `f"{x:.17f}"` vale per un numero; per gli array `np.set_printoptions(precision=17)`.
+
+*Shell*
+- `[ "$num" -eq 0 ]`: `$` per leggere la variabile e operatore separato da spazi. `[ num=0 ]` è sempre vero (terza volta).
+- In `echo` le variabili, non testo fisso: `"$1: $num"`.
+- Dentro le virgolette ogni spazio viene stampato (`tests : 7`, `21 `).
+
+*Git*
+- `git tag NOME` crea un tag leggero; per una release `git tag -a NOME HASH -m "…"`. `git show` deve mostrare `Tagger:`.
+- Tag già pushato da correggere: `git tag -d NOME` + `git push origin --delete NOME`, poi ricrearlo.
+- Sul server `git tag` non distingue leggero da annotato: controllare con `git show`.
+- `git log -S 'testo'` vuole il testo esatto; una riga per commit = `--oneline`; dopo `--` uno spazio e il file relativo al repo (quarta volta).
+
+*Matematica*
+- (Xᵀ)ᵀ = X: trasponendo un prodotto, un fattore già trasposto torna normale.
+- DARE duale: a = Adᵀ, b = Cᵀ. Il DARE dà P⁻; `gain()` usa P⁻, `covariance()` dopo `update()` è P⁺.
+- P e L non dipendono da y e u: nel test si usa y = u = 0.
+- (I − LC)P è simmetrica solo con L esatto; gli arrotondamenti rompono la simmetria e il modo instabile (|λ| = 1.0974) la amplifica. Joseph = X P Xᵀ + L Rn Lᵀ è simmetrica e semidefinita positiva per qualsiasi L. In 1×1 il problema non si vede.
+
+**Consolidati**: shadowing del parametro `&` (corretto senza indizi), `grep -r … | wc -l` dentro `$(…)`, `exit 2` su stderr, `push origin --delete`.
+
+**Piano S5 rivisto** (si tiene tutto)
+
+| Giorno | Contenuto |
+|---|---|
+| Mar 24 | LESO + learncpp 12.15 `std::optional` |
+| Mer 25 | learncpp 25.1–25.4, 25.7 + interfaccia `Controller` (virtual vs template) |
+| Gio 26 | Python: NumPy for MATLAB users, dataclasses, typing, pytest, pyproject → `tools/` come pacchetto |
+| Ven 27 | pybind11: binding di `dlqr` + pytest contro `solve_discrete_are` |
+| Sab 28 | MPC condensato in NumPy + OSQP Python come riferimento |
+| Lun 30 + mar 1/12 | MPC C++ su OSQP + benchmark, CI (sanitizer, clang-tidy, clang-format), release v0.1.0 |
+| Mer 2/12 | Inizio P2 (ROS 2); recupero sab 5/12 |
+| S12 | iLQR/DDP in NumPy come primo task, prima di Nav2 (prima se in anticipo) |
+
+**Rimandato**
+- LESO e `std::optional`: mar 24/11.
