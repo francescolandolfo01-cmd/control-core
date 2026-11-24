@@ -753,3 +753,61 @@ Recupero del piano di sabato.
 
 **Rimandato**
 - LESO e `std::optional`: mar 24/11.
+
+## 2026-11-24 (mar) · S5
+
+Giornata ridotta (colloquio).
+
+**Fatto**
+- Ripasso a memoria: `move24.cpp` (previsione `1 false` / `8` giusta); `fix24.cpp` (riferimento `&` su un'espressione, `Identity()` 3×3 su una matrice 2×2, `;` mancante; il `const` del parametro segnalato per sbaglio) → `1 4` / `4 5`; `~/bin/contatest.sh` (2 errori: `grep` senza file, `-l`) → `test_kalman.cpp: 3 test`, `exit 1`, `exit 2`; `echo "header: $(find … -name '*.h' | wc -l)"` = 6; `git log -S 'IKC' --oneline` → `b5c8c45` (senza `-- percorso`); `~/git-lab/tag-23`: `v0.1.0` non esisteva, `ok` = tag leggero, `v0.1.0` annotato ricreato su `HEAD`.
+- learncpp 12.15 `std::optional` + `~/cpp-lab/optional-24` (3 errori: risultato scartato, `'\n'` mancante, contatore da 0) → `3`, `nessuna radice`, `44`, `-1`, `-1`.
+- LESO su carta (indizi sui passi 3 e 4): Φ e Γ esatti (A³ = 0), e⁺ = (Φ − LC)e, l₁ dal coefficiente di λ², l₂ e l₃ da somma e differenza delle altre due equazioni, limite T → 0 = T·[3ω₀, 3ω₀², ω₀³].
+- `tools/ref_leso.py` (Ackermann): β = 0.951229424500714, L = [0.14631172649785792, 7.07770501325522, 116.00418067888495], differenza con la formula chiusa 1.42e-14.
+- `Leso` in `include/control_core/leso.h` (3 errori: `beta` e `C` non dichiarate, `const` prima del tipo invece che dopo le parentesi) → `3712f90` su `main`.
+- `tests/test_leso.cpp`: `DiscretizationMatchesStateSpace` (1e-12), `GainMatchesAckermann` (1e-10), `ErrorMatrixHasTriplePole` (< 1e-12). 25/25.
+- Branch `feat/leso` "out-of-date" dopo Rebase and merge: nuovo branch `feat/leso-tests` da `main` + `cherry-pick` del commit dei test (`25ff70a`), PR #31 chiusa, `feat/leso` cancellato in locale e sul server.
+
+**Concetti chiave**
+- LESO: ẍ = d + b₀u, z = [x, ẋ, d]. Φ = [1 T T²/2; 0 1 T; 0 0 1], Γ = [T²/2; T; 0]. Predittore: ẑ⁺ = Φẑ + Γb₀u + L(y − Cẑ); con y = Cz l'errore è e⁺ = (Φ − LC)e, senza u.
+- Polo triplo in β = e^{−ω₀T}: l₁ = 3(1 − β), l₂ = (1 − β)²(5 + β)/(2T), l₃ = (1 − β)³/T². Per T → 0: L ≈ T·L_c, con L_c = [3ω₀, 3ω₀², ω₀³].
+- Ackermann (osservatore): L = φ(Φ) O⁻¹ [0 0 1]ᵀ, con O = [C; CΦ; CΦ²]. Polo triplo verificato con (Φ − LC − βI)³ = 0, non con `eigenvalues()`.
+- `std::optional<T>`: `return std::nullopt;` (o `return {};`) = nessun valore, `has_value()`, `*r`, `value_or(x)`. Equivale a `[]` + `isempty` in MATLAB.
+
+**Da rivedere**
+
+*C++ / Eigen*
+- Una funzione che restituisce un valore non modifica i suoi argomenti: `f(x);` butta via il risultato, serve `Tipo r{ f(x) };` (come `r = f(x)` in MATLAB).
+- Contatore "k-esimo passo" (1..N): `for (int k{ 1 }; k <= N; ++k)`. Con `k{ 0 }; k < N` i giri sono N lo stesso, ma `k` vale uno in meno (43 invece di 44).
+- Variabile nuova = tipo + nome (`double beta{ … };`, `Eigen::Matrix<double, 1, 3> C;` + `<<`); senza tipo è un'assegnazione a qualcosa che non esiste.
+- Metodo che non modifica l'oggetto: `Tipo nome() const { … }`, con `const` DOPO le parentesi. `const Tipo nome()` rende const solo il valore restituito.
+- Oggetto con nome: `control_core::Leso leso(50.0, 2.0, 0.001);`. Senza nome è un temporaneo distrutto a fine riga.
+- `const Tipo&` nel parametro è una promessa della funzione, non un requisito per chi chiama: un argomento non `const` si passa sempre a un `const&`; il contrario no.
+- Un riferimento non `const` non si lega a un'espressione come `A + A.transpose()`; `&` va nei parametri, non nelle variabili locali (seconda volta).
+- `YOU_MIXED_MATRICES_OF_DIFFERENT_SIZES` → `required from here` e le due dimensioni (seconda volta).
+- `;` mancante: l'errore compare sulla riga dopo.
+- Dopo `std::move(p1)`, `p1 == nullptr` è vero; `std::boolalpha` resta attivo su `std::cout` fino a `std::noboolalpha`, anche nelle istruzioni successive.
+- `*r` su un `optional` vuoto è comportamento indefinito: prima `has_value()` (nel test `ASSERT_TRUE`, poi `EXPECT_EQ(*r, …)`).
+
+*Test*
+- Il riferimento del test è `L` di Ackermann, non `L_formula`: mai dalla formula che si sta testando.
+- Le ultime cifre di un riferimento possono cambiare con l'ordine delle operazioni: la tolleranza (1e-10) ne tiene conto.
+
+*Shell*
+- `grep PATTERN` senza file legge da stdin e resta in attesa: il file va dopo il pattern (`"$1"`).
+- `grep -l` = nomi dei file che contengono il pattern; senza `-l` = le righe. Per contare: `grep … | wc -l`.
+- `[ "$N" -eq 0 ]`: virgolette anche se N è sempre un numero.
+
+*Git*
+- Dopo "Rebase and merge" il branch è chiuso: GitHub riscrive i commit con hash nuovi, quindi altri commit sullo stesso branch lo rendono "out-of-date". Lavoro nuovo = branch nuovo da `main` aggiornato. Se è già successo: branch nuovo + `cherry-pick`, chiudere la PR vecchia, `git branch -D` sul branch vecchio (`-D` perché Git non lo vede mergiato).
+- Non cliccare "Update branch" (merge commit nel branch).
+- `fatal: ambiguous argument 'NOME': unknown revision` = NOME non esiste: prima `git tag` / `git branch` per vedere i nomi veri. Non inventare opzioni (`-lw`).
+- `git tag -n` non distingue leggero da annotato: `git show NOME` e la riga `Tagger:`. Senza hash, `git tag -a` va su `HEAD`.
+- `git log -S 'testo' --oneline -- percorso/relativo`: il `-- percorso` limita al file (quinta volta).
+
+**Consolidati**: `grep … | wc -l` dentro `$(…)`, `find` con la cartella precisa + `-type f`, `exit 1` / `exit 2` su stderr, previsione `std::move` + `nullptr`.
+
+**Rimandato**
+- Test `Leso.EstimatesConstantDisturbance` e `Leso.FirstStepWithinTolerance` (`firstStepWithin` con `std::optional`, attesi 252 e nessun valore entro 200) + fallimento apposta con `/T` in l₂: mer 25/11.
+- Pro Git 7.1 Commit Ranges + `~/git-lab/range-24`: mer 25/11.
+
+**Domani**: test 4–5 del LESO, poi learncpp 25.1–25.4, 25.7 e interfaccia `Controller` (virtual vs template).
