@@ -811,3 +811,54 @@ Giornata ridotta (colloquio).
 - Pro Git 7.1 Commit Ranges + `~/git-lab/range-24`: mer 25/11.
 
 **Domani**: test 4–5 del LESO, poi learncpp 25.1–25.4, 25.7 e interfaccia `Controller` (virtual vs template).
+
+## 2026-11-25 (mer) · S5
+
+**Fatto**
+- Ripasso a memoria: `fix25.cpp` (`sum` senza tipo, `const int value()`, risultato di `doubled` scartato trovati da solo; contatore 1..N con indizio) → `13 20`; `pred25.cpp` (previsione `true 3` / `false -1` giusta); `~/bin/contaexpect.sh` (argomenti di `grep` invertiti) → `tests/test_leso.cpp: 10 EXPECT`, `exit 1`, `exit 2`; `echo "file con matrici 3x: $(grep -r -l … ~/control-core/tests | wc -l)"` = 1 (prima con `find | grep -r`: 20); `git log -S 'std::exp(-omega0*Ts)' --oneline -- include/control_core/leso.h` → `3712f90`; `~/git-lab/amend-25`: `reset --hard HEAD@{1}` → `4d146cc` "B originale".
+- learncpp 24.1–24.5, 24.7 (ereditarietà) + 25.1–25.2 + `~/cpp-lab/virtual-25`: senza `virtual` → `5 8 8`, con `virtual` → `5 8 5`.
+- Pro Git 7.1 Commit Ranges + `~/git-lab/range-25`: `main..feat` = D C, `feat..main` = E, `--left-right main...feat` = `< E`, `> D`, `> C`, `^main feat` = `feat --not main`.
+- `tools/ref_leso.py` con d = −3, u = 0.5: primo passo con |d̂ − d| < 1e-3 = 252, max|ẑ − z| a 1000 passi = 3.44e-13; con 200 passi `None` (errore 8.48e-3).
+- `Leso.EstimatesConstantDisturbance` (1000 passi, tol 1e-9) e `Leso.FirstStepWithinTolerance` (`firstStepWithin` con `std::optional`: 252 con 1000 passi, nessun valore con 200). 27/27, `9b83cfb` su `main`.
+- Fallimento apposta con `(2*Ts*Ts)` in l₂: falliscono 4 test (l₂ = 7077.7, `(N³)` = 5e4, stime `nan`, `r1` vuoto).
+
+**Concetti chiave**
+- Derivata: `class D : public B`, costruttore `D(…) : B{ … }, m_x{ … } {}`. Si costruisce prima la base, poi la derivata; si distrugge al contrario. I `private` della base non si vedono: si usano i getter (`k()`, senza oggetto davanti dentro un metodo).
+- Senza `virtual` decide il tipo del riferimento (statico, in compilazione); con `virtual` decide il tipo dell'oggetto (dinamico, a run time). La firma è la stessa in base e derivata.
+- LESO con d costante: e⁺ = (Φ − LC)e, polo triplo in β = e^{−ω₀T} = 0.9512; |d̂ − d| < 1e-3 al passo 252 (≈ 12.6/ω₀). Con l₂ sbagliato |λ(Φ − LC)| = 2.816 > 1 → instabile.
+- Range: `A..B` = raggiungibili da B ma non da A; `A...B` = da uno solo dei due. `origin/main..HEAD` = cosa entra in `main` con la PR; `main..origin/main` dopo `fetch` = cosa porta `pull`.
+
+**Da rivedere**
+
+*C++*
+- Costruttore della base nella lista di inizializzazione: `: Gain{ k }`, poi i membri della derivata.
+- Funzione non-`void`: ogni percorso finisce con `return` (`control reaches end of non-void function`).
+- `;` mancante: l'errore compare sulla riga dopo (`expected ',' or ';' before …`) (seconda volta).
+- Ogni `TEST` dichiara le sue costanti: `d` di `firstStepWithin` non esiste nel test.
+- Copiando una riga si cambia subito il nome (`r1` → `r2`) (terza volta).
+- `double` ed `Eigen::Matrix<double, 1, 1>` sono tipi diversi: `u` per `leso.step`, `uv` per `plant.step`.
+- Stato esteso z = [x, ẋ, d]: d è `z(2)`. Con `x0(1) = d` il test passava, ma verificava la cosa sbagliata.
+- Contatore 1..N: `k{ 1 }; k <= N`; cambiando l'inizio si cambia anche la condizione (terza volta).
+- `std::optional` vuoto = `std::nullopt`; "nullo" (`nullptr`) si dice dei puntatori.
+
+*Test*
+- Un test verde va controllato leggendo i valori: `./build/test_X --gtest_filter=…` mostra lo `std::cout` che `ctest` nasconde.
+
+*Python*
+- `@` = prodotto matriciale (`*` di MATLAB); con gli scalari `*` (`.*` di MATLAB).
+
+*Shell*
+- `./` = cartella corrente, `~/` = home, solo all'inizio del percorso. Lavorare sotto `~`, non in `/mnt/c`.
+- `grep PATTERN FILE`: prima il pattern, poi il file (terza volta).
+- `grep -r PATTERN CARTELLA` cerca nel contenuto; `find … | grep` cerca nei nomi. `grep -r` senza cartella cerca in `.` (anche `build/`).
+
+*Git*
+- `git log -S 'testo' --oneline -- percorso` (sesta volta; giusto al secondo tentativo).
+- `git reflog` senza argomenti per la lista completa; i numeri `HEAD@{n}` si spostano a ogni operazione.
+
+**Consolidati**: `grep -l` + `wc -l` dentro `$(…)`, `exit 1` / `exit 2`, `reset` dal reflog.
+
+**Rimandato**
+- learncpp 25.3, 25.4, 25.7 e interfaccia `Controller` (virtual vs template): da ricollocare.
+
+**Domani**: Python oltre la base (NumPy for MATLAB users, dataclasses, typing, pytest, pyproject) → `tools/` come pacchetto con pytest.
