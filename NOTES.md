@@ -862,3 +862,57 @@ Giornata ridotta (colloquio).
 - learncpp 25.3, 25.4, 25.7 e interfaccia `Controller` (virtual vs template): da ricollocare.
 
 **Domani**: Python oltre la base (NumPy for MATLAB users, dataclasses, typing, pytest, pyproject) → `tools/` come pacchetto con pytest.
+
+## 2026-11-26 (gio) · S5
+
+**Fatto**
+- Ripasso a memoria: `fix26.cpp` (`;` dopo `m_lim{}` trovato da solo; costruttore della base `: Gain{ k }` e `return y;` con indizi) → `3 5 -5`; `pred26.cpp` previsto `6 5 -1` invece di `3 5 -1` (risultato di `doubled(a)` scartato), con `k{ 0 }; k < N` → `4` giusto; `grep 'TEST(' … | wc -l` = 5; `grep -r -l 'std::optional' … | wc -l` = 1 (senza `-l`: 3 righe); `~/control-core/build/test_leso` lanciato da `/tmp` (con indizi); `git log -S 'ldlt' --oneline -- include/control_core/dlqr.h` → `c34db3a` al primo colpo; `git log --oneline HEAD~3..HEAD` (dato da Claude).
+- NumPy for MATLAB users + `~/py-lab/np-26/np26.py`: 6 traduzioni giuste dopo correzioni (`solve` con indizi, stampe dopo la vista, `np.zeros((3, 3))`, assegnazione del blocco `M[0:2, 1:3] = …`).
+- Python tutorial 9.3, `dataclasses`, cheat sheet di mypy + `dc26.py`: `__repr__`, `s.A[0, 0] = 5.0` permesso con `frozen`, `Ts="ciao"` accettato, `FrozenInstanceError` su `s.Ts = 1.0`.
+- pytest Get Started + `assert_allclose` + `test_np26.py` (2 passed, dopo aver corretto A nei dati del test).
+- Pro Git 2.2 Ignoring Files / Removing Files + `~/git-lab/ignore-26`: `.gitignore`, `git rm --cached` (`-r` per le cartelle), commit sistemato con `--amend` → `d9080b0`, `git ls-files` = `.gitignore`, `a.py`.
+- Pacchetto `ccref`: `pyproject.toml` (setuptools, `where = ["python"]`), venv `.venv`, `pip install -e '.[test]'` (pytest 9.2, NumPy 2.5), `.gitignore` aggiornato prima del primo `git add`.
+- `LinearSystem` (dataclass frozen, controllo delle dimensioni in `__post_init__`), `cart_pole_upright`, `zoh` (Van Loan con `expm`, giusto al primo colpo), `dlqr`, `leso_gain` + `leso_gain_ackermann`. `env -u PYTHONPATH pytest -v`: 9 passed (zoh vs `cont2discrete` 1e-12, K vs test C++ 1e-10, residuo DARE < 1e-9, |λ| max < 1, LESO vs Ackermann 1e-10, limite T → 0 con rtol 1e-4).
+
+**Concetti chiave**
+- NumPy ↔ MATLAB: indici da 0, nelle slice l'inizio scende di 1 e la fine resta uguale (`1:2` → `0:2`); `@` = `*` di MATLAB, `*` = `.*`; `np.linalg.solve(A, b)` = `A\b`; elemento = `K[i, j]`. Una slice è una vista (`.copy()` per una copia); a sinistra dell'`=` scrive, a destra legge.
+- `@dataclass` genera `__init__`, `__repr__`, `__eq__`; `__post_init__` gira dopo `__init__`. `frozen=True` vieta di riassegnare i campi, non di modificare il contenuto di un array. I tipi annotati non vengono controllati a run time.
+- Van Loan: e^{[A B; 0 0]·Ts} = [Ad Bd; 0 I]. DARE: P = Q + AᵀPA − AᵀPB(R + BᵀPB)⁻¹BᵀPA, K = (R + BᵀPB)⁻¹BᵀPA. LESO per T → 0: L/T → [3ω₀, 3ω₀², ω₀³].
+- `.gitignore` vale solo per i file non tracciati: un file già tracciato si toglie con `git rm --cached` (resta sul disco). `dir/` = solo cartelle, `/x` = solo nella radice.
+- venv: su Ubuntu il Python di sistema è di apt (PEP 668), quindi `pip` solo nel venv. `source .venv/bin/activate` perché modifica la shell corrente. Con ROS attivo, `PYTHONPATH` fa caricare a pytest i plugin di ROS → `env -u PYTHONPATH pytest`.
+
+**Da rivedere**
+
+*Python*
+- Indentazione: 4 spazi, mai tab (`TabError`); il corpo di `def`/`if` va più a destra della riga sopra. `~/.nanorc` con `tabstospaces`.
+- `if …:` con i due punti; una funzione senza `return` restituisce `None`.
+- Ogni funzione e ogni test usa solo le sue variabili (`Ad_ref`, `Bd`, `beta` non definiti) — copia-incolla dei nomi (quarta volta).
+- I test vengono raccolti solo se il nome inizia con `test_`: controllare `collected N items`.
+- `np.exp` per gli scalari, `scipy.linalg.expm` per le matrici.
+- Residuo = lato destro − lato sinistro: segni come nella formula e `- P` finale.
+- `K[0, j]`, non `K[[0][0]]`; meglio confrontare la matrice intera con `assert_allclose(K, K_ref, rtol=0, atol=…)`.
+- `assert_allclose`: tolleranza = atol + rtol·|desired|; con i default, vicino a 0 vale 0 → sempre `rtol=0, atol=…`.
+- `np.zeros((3, 3))` per una matrice; numeri decimali (`1.0`) per array `float`. Il meno copiato da un testo deve essere `-` (ASCII).
+- `@dataclass` va importato: `from dataclasses import dataclass`.
+
+*C++*
+- Costruttore della base nella lista di inizializzazione: `: Gain{ k }, m_lim{ lim }`; `virtual` riguarda le chiamate, non la costruzione.
+- Funzione non-`void`: ogni percorso finisce con `return` (seconda volta).
+- `doubled(a);` butta via il risultato; `a` passato per valore non cambia (seconda volta).
+
+*Shell*
+- `grep -l` = nomi dei file; senza `-l` = righe.
+- Un eseguibile si lancia con il suo percorso: `./nome` dalla cartella corrente, `~/control-core/build/test_leso` da altrove. `ls` guarda, `mv` sposta.
+
+*Git*
+- Range: `git log --oneline HEAD~3..HEAD` — il più recente a destra, tilde attaccata al nome, nessuna opzione.
+- `git commit -m "…" FILE` committa solo FILE; senza percorso, tutto l'indice.
+- `--amend` sostituisce l'ultimo commit (hash nuovo): solo se non pushato.
+
+**Consolidati**: `grep PATTERN FILE | wc -l`, `log -S … --oneline -- percorso` (primo colpo, da confermare la prossima volta).
+
+**Rimandato**
+- Blocco 9: `tools/ref_dare.py` riscritto con `ccref` + `diff` con l'output vecchio: ven 27/11 mattina.
+- learncpp 25.3, 25.4, 25.7 + interfaccia `Controller`: ven 27/11.
+
+**Domani**: `ref_dare.py` con `ccref`, learncpp 25.3–25.7 + `Controller`, poi pybind11 (binding di `dlqr` testato con pytest contro `ccref.dlqr`).
