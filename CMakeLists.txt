@@ -50,3 +50,15 @@ if(BUILD_TESTING)
   target_compile_options(test_leso PRIVATE -Wall -Wextra -Wpedantic -Werror)
   gtest_discover_tests(test_leso)
 endif()
+
+
+option(CONTROL_CORE_BUILD_PYTHON "Modulo Python _cc con pybind11" OFF)
+if(CONTROL_CORE_BUILD_PYTHON)
+  find_package(Python 3.10 REQUIRED COMPONENTS Interpreter Development.Module)
+  find_package(pybind11 CONFIG REQUIRED)
+  # pybind11_add_module: target _cc, sorgente python/bindings/bind_dlqr.cpp
+  pybind11_add_module(_cc python/bindings/bind_dlqr.cpp)
+  # target_link_libraries: _cc PRIVATE control_core
+  target_link_libraries(_cc PRIVATE control_core)
+  set_target_properties(_cc PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python/ccref)
+endif()
