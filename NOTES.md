@@ -916,3 +916,64 @@ Giornata ridotta (colloquio).
 - learncpp 25.3, 25.4, 25.7 + interfaccia `Controller`: ven 27/11.
 
 **Domani**: `ref_dare.py` con `ccref`, learncpp 25.3–25.7 + `Controller`, poi pybind11 (binding di `dlqr` testato con pytest contro `ccref.dlqr`).
+
+## 2026-11-27 (ven) · S5
+
+**Fatto**
+- Ripasso a memoria: `fix27.cpp` (costruttore della base `: Offset{ c }`, `;` mancante, `return` finale trovati da solo; valore del `return` = `c()` con spiegazione) → `2.5 1 0`; `pred27.cpp` → `6 1 5 -1` (valori giusti, `true` invece di `1`; `r2` = optional vuoto, `std::nullopt`); `grep 'zoh(' … | wc -l` = 5, `grep -l 'import numpy' …/*.py | wc -l` = 4 (con `-r` superfluo); `~/control-core/build/test_dlqr` lanciato da `~/py-lab` al primo colpo (5 test); `git log HEAD~4..HEAD` (giusto, senza `--oneline`); `~/git-lab/amend-27`: `git add b.py` + `git commit --amend --no-edit` → `9706b7b` con 2 file (con indizi: prima pensato a editor e `reset`).
+- learncpp 25.3, 25.4, 25.7 + 3 domande (corrette: meccanismo di `override`, motivo del distruttore virtuale, `Controller` per valore).
+- `~/cpp-lab/controller-27`: interfaccia `Controller`, `PController`/`PIController` `final` con `override`, `runVirtual` e `runTemplate` → `0.666667 0.958434`, `1.01652` senza `reset()`, `0.958434` dopo `reset()`. Fallimenti apposta: tipo astratto (con `note` delle virtuali pure), `const` → `marked 'override', but does not override` + `PController` astratta a cascata, `cannot derive from 'final' base`.
+- Pro Git 7.3 Cleaning your Working Directory + `~/git-lab/clean-27`: `-n` → `note.txt`; `-n -d` → `+ tmp/`; `-n -d -x` → `+ build/`, `mod.so`; `-f -d` → restano `a.py build mod.so`, `status` vuoto.
+- Pulizia branch locali `gone` (verifica con `git log --oneline main | grep '<messaggio>'` → `cb8ceff`): cancellati con `-D` `docs/notes-22`, `feat/kalman`, `feat/leso-tests`, `test/lqr-nonlinear`. Branch `feat/pybind-dlqr` da `main`.
+- `tools/ref_dare.py` con `ccref` (`zoh`, `cart_pole_upright`, `dlqr`): `diff` con l'output vecchio vuoto.
+- pybind11 (Installing, First steps, Building with CMake, Eigen, Python types) + 3 domande (risposte date da Claude).
+- Modulo `ccref._cc`: pybind11 3.1.0, Python 3.12.3 del venv; opzione `CONTROL_CORE_BUILD_PYTHON` (OFF di default, CI invariata), `.so` in `python/ccref/`, `*.so` in `.gitignore`. `dlqr_cart_pole(Ad, Bd, Q, R, max_iter=100000, tol=1e-12)` → `(ok, P, K)`; doc con forme `"[4, 4]"`, `"[4, 1]"`, `"[1, 1]"`.
+- `tests_py/test_bind_dlqr.py`: `test_binding_matches_ccref` (K atol 1e-10 dopo `reshape(1, 4)`, P atol 1e-8), `test_wrong_shape_raises` (A 3×3 → `TypeError`), `test_not_converged` (`max_iter=10` → `ok` falso). `pytest`: 12 passed; `ctest`: 27/27.
+- Fallimento apposta con `tol = 1e-2` di default: fallisce solo `test_binding_matches_ccref`, errore massimo su K = 4.1e-3 (relativo 4.9e-4).
+
+**Concetti chiave**
+- `override` = il compilatore verifica che la funzione sovrascriva una virtuale della base con la stessa firma (`const` compreso), altrimenti errore. Senza, nasce una funzione nuova in silenzio e tramite `Base&` parte quella della base. `final` sulla classe vieta di derivare, sul metodo vieta di sovrascrivere.
+- Distruttore: `virtual ~Base() = default;` (o `{}`, non tutti e due). Senza `virtual`, `delete` tramite `Base*` / `unique_ptr<Base>` chiama solo `~Base()`: comportamento indefinito, la parte derivata non viene distrutta (leak dei suoi membri).
+- Classe astratta = almeno una virtuale pura `= 0`; interface class = solo virtuali pure, nessun membro, distruttore virtuale. `Controller&` sì (si lega a un oggetto derivato esistente), `Controller` per valore no (non si istanzia).
+- virtual = una sola funzione, `compute` scelta a run time (vtable). template = una copia per ogni tipo usato (qui 1: `runTemplate<PIController>`), scelta in compilazione.
+- pybind11: il nome in `PYBIND11_MODULE(_cc, m)` genera `PyInit__cc` e deve coincidere con `pybind11_add_module(_cc …)`, che dà il nome al `.so`. NumPy → `const Eigen::Matrix<…, N, M>&` fissa: copia con controllo della forma (`TypeError`). I vettori Eigen tornano 1-D (`K.shape == (4,)`). Un template si espone solo istanziato (`dlqr<4, 1>`).
+- `git clean`: `-n` prova a vuoto, `-f` cancella (obbligatorio), `-d` anche le cartelle non tracciate, `-x` anche gli ignorati. Tocca solo i file non tracciati: i file committati non vengono mai cancellati.
+- `tol` sulla differenza tra due iterate di Riccati ≠ errore finale su K: con `tol = 1e-2`, K sbaglia di 4e-3.
+
+**Da rivedere**
+
+*C++*
+- Funzione non-`void`: dopo una serie di `if` con `return` serve il `return` finale per il caso "nessun `if`" (quarta volta).
+- Derivata: intestazione `class D final : public B`; ogni membro usato nel costruttore va dichiarato in `private` con `{}`.
+- Più parametri = **un** costruttore `(kp, ki, Ts)` con `: m_kp{ kp }, m_ki{ ki }, m_Ts{ Ts }`; tre costruttori `(double)` hanno la stessa firma.
+- Membro con valore iniziale fisso (`m_integral`): `double m_integral{};`, non va nel costruttore.
+- Variabile locale: tipo + nome (`double e{ r - y };`).
+- Una derivata che non fa override di tutte le virtuali pure resta astratta.
+- `const` va dopo la lista dei parametri di un **metodo**; un costruttore non può essere `const` (`constructors may not be cv-qualified`).
+- In una cascata di errori si corregge il **primo**.
+- `'…'` = un carattere, `"…"` = stringa; un nome in un commento non è una variabile (`converged` → `ok`).
+- Parametri della funzione al posto dei numeri scritti a mano (`maxIter`, `tol`), altrimenti `unused parameter`.
+- `cout << bool` stampa `1`/`0`.
+
+*pybind11 / CMake*
+- `py::arg("Ad")`: il nome tra virgolette.
+- `pybind11_add_module(_cc sorgente.cpp)`: prima il nome, poi i sorgenti; le parole dei commenti dello scheletro non vanno ricopiate.
+
+*Python*
+- `np.diag([1.0, 1.0, 10.0, 1.0])`: un solo array; `R = np.array([[0.1]])`, non una lista.
+- Negazione: `not ok` (non `!`); `and`, `or`.
+- `pytest.raises(TypeError)` nel `with`, la chiamata indentata dentro; non passare l'eccezione ad altre funzioni.
+- Nomi uguali a quelli dichiarati (`K_ref`, non `Kref`): copia-incolla dei nomi (quinta volta).
+
+*Shell*
+- `grep -r` solo con una cartella; con un glob di file basta `grep -l`.
+
+*Git*
+- `--amend` prende l'**indice**: prima `git add`, poi `git commit --amend --no-edit` (tiene il messaggio). Solo se non è pushato.
+- `git log --oneline` per una riga per commit.
+- `git clean -d` = cartelle, `-x` = ignorati.
+- Dopo ogni merge su GitHub: `git switch main`, `git pull`, `git branch -D <branch>`. Verifica con il messaggio: `git log --oneline main | grep '<messaggio>'`.
+
+**Consolidati**: eseguibile lanciato con il percorso completo da un'altra cartella, `grep -l … | wc -l` dentro `$(…)`, sintassi del range `HEAD~4..HEAD`.
+
+**Domani**: sabato, MPC lineare condensato in NumPy sul cart-pole + OSQP Python come riferimento.
