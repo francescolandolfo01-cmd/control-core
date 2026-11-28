@@ -977,3 +977,49 @@ Giornata ridotta (colloquio).
 **Consolidati**: eseguibile lanciato con il percorso completo da un'altra cartella, `grep -l … | wc -l` dentro `$(…)`, sintassi del range `HEAD~4..HEAD`.
 
 **Domani**: sabato, MPC lineare condensato in NumPy sul cart-pole + OSQP Python come riferimento.
+
+## 2026-11-28 (sab) · S5
+
+**Fatto**
+- Ripasso a memoria: `fix28.cpp` (`const` mancante nella firma con `override`, `return u;` finale; trovati da solo) → `2 3 -3`; `pred28.cpp` previsione `2 10 20` / `1` giusta (spiegazione da correggere: riferimento, non puntatore; `f` virtuale segue l'oggetto); `echo "test Python: $(grep … | wc -l)"` = 12 (con `-r` superfluo); `grep -l 'np.linalg.solve' …/*.py | wc -l` = 2; `git log -S 'PYBIND11_MODULE' --oneline -- python/bindings/bind_dlqr.cpp` → `e395519` al primo colpo; `~/git-lab/amend-28`: `git add b.py` + `git commit --amend --no-edit` senza indizi (2 file, 1 commit); `git clean -n -d` (prima con un percorso per file).
+- `main` aggiornato, `feat/pybind-dlqr` cancellato; branch `feat/mpc-ref`; `osqp` 1.1.3 nel venv e in `pyproject.toml`.
+- Teoria: slide di Bemporad "Linear MPC" 36–41 (caso senza vincoli, forma condensata, QP) e 76–77 (MPC = LQR); OSQP Solver + interfaccia Python. 3 domande: 1 in parte giusta, 2 e 3 spiegate da Claude.
+- `python/ccref/mpc.py`: `prediction_matrices`, `condensed_cost`, `mpc_unconstrained`, `mpc_box_osqp`.
+- `tests_py/test_mpc.py`: predizione vs simulazione (1e-12), u₀ = −Kx₀ = 4.160979870360416 (1e-10), OSQP = senza vincoli con u_max = 10 (1e-6), u_max = 2: |U| ≤ 2 e u₀ = 2. 4 passed. Con u_max = 2 i primi 8 ingressi sono saturi, u₈ = 1.68797697.
+
+**Concetti chiave**
+- X = S_x x₀ + S_u U, S_x = [A; …; A^N], blocco (r, j) di S_u = A^{r−j}B per j ≤ r (0 sopra la diagonale). Q̄ = blkdiag(Q, …, Q, P), R̄ = blkdiag(R, …, R). H = 2(S_uᵀQ̄S_u + R̄), F = 2S_uᵀQ̄S_x, U* = −H⁻¹Fx₀.
+- H dipende solo da A, B, Q, R, P, N ed è costante; nel ciclo cambia solo q = Fx(t): `setup` una volta, poi `update(q=…)` + `solve`. Warm start = OSQP parte dalla soluzione del passo prima. La `P` di OSQP è la nostra H, non il P della DARE.
+- Con P = soluzione della DARE (x_NᵀPx_N = costo ottimo da N a ∞) la ricorsione di Riccati resta in P: u₀* = −Kx₀ per ogni N. x₀ᵀQx₀ è costante rispetto a U: cambia il valore del minimo, non il punto.
+- OSQP: min ½zᵀPz + qᵀz, l ≤ Az ≤ u; P = solo triangolo superiore in CSC (`sparse.triu`); box su u con A = I. Precisione ~eps_abs/eps_rel, non di macchina: test con atol 1e-6. OSQP 1.x: `polishing` (non `polish`), `solve(raise_error=False)` + controllo di `res.info.status`.
+
+**Da rivedere**
+
+*Python / NumPy*
+- Nel ciclo interno l'indice che cambia deve comparire nella slice: colonne di S_u con `j*nu:(j+1)*nu`, non `r` (altrimenti si scrive sempre il blocco diagonale).
+- Funzioni di NumPy con il prefisso: `np.kron`, `np.linalg.matrix_power` (`NameError: name 'kron' is not defined`).
+- Una funzione senza `return` restituisce `None` → `cannot unpack non-iterable NoneType object` (seconda volta; in C++: `return` finale, quinta volta).
+- `np.diag([1.0, 1.0, 10.0, 1.0])`: decimali, altrimenti array di interi.
+- Prima di lanciare pytest: `ls tests_py` per vedere che il file esiste (era stato chiuso senza salvarlo).
+- Un test verde va controllato: il test deve contenere l'`assert`, non solo il commento.
+
+*C++*
+- Il `const` dopo le parentesi fa parte della firma: senza, `override` non trova la funzione.
+- Tramite `Base&`: funzione virtuale → tipo dell'oggetto; non virtuale → tipo del riferimento (`b.g()` = 10, `d.g()` = 20). `b` è un riferimento, non un puntatore.
+
+*Shell*
+- `grep -r` solo con una cartella; con `*.py` basta `grep` / `grep -l` (seconda volta).
+- Dentro le virgolette anche un a capo viene stampato.
+- `python: command not found` = venv non attivo: `source .venv/bin/activate` in ogni terminale nuovo.
+
+*Git*
+- `git clean -n -d` senza percorsi considera tutti i file non tracciati; un percorso limita la pulizia.
+- Dopo `git branch -D` il branch nuovo va creato: `git switch -c NOME`, poi `git branch` per verificare.
+
+**Consolidati**: `log -S … --oneline -- percorso` (secondo primo colpo), `--amend` partendo dall'indice, `grep -l … | wc -l`.
+
+**Rimandato**
+- `simulate_mpc_box` (ciclo chiuso con `update(q=…)`, 250 passi, ‖x‖ ≈ 7.49e-3) + `test_closed_loop_box`: lun 30.
+- Fallimento apposta senza P terminale (u₀ ≈ 1.977 invece di 4.161): lun 30.
+
+**Domani**: lunedì 30 (3 h): ciclo chiuso e fallimento apposta, poi teoria MPC sparso vs condensato e API C di OSQP.
